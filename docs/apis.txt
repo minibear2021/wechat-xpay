@@ -1,0 +1,1133 @@
+2.3.服务器API
+用户态签名
+签名参数为signature，加在query后面，例如接口地址是：https://api.weixin.qq.com/xpay/query_user_balance?access_token=xxxx，加上签名后则需要传https://api.weixin.qq.com/xpay/query_user_balance?access_token=xxxx&signature=xxx
+
+支付签名
+签名参数为pay_sig，加在query后面，例如接口地址是：https://api.weixin.qq.com/xpay/query_user_balance?access_token=xxxx，加上签名后则需要传https://api.weixin.qq.com/xpay/query_user_balance?access_token=xxxx&pay_sig=xxx
+
+错误码
+错误码	描述
+-1	系统错误
+268490001	openid错误
+268490002	请求参数字段错误，具体看errmsg
+268490003	签名错误
+268490004	重复操作（赠送和代币支付和充值广告金相关接口会返回，表示之前的操作已经成功）
+268490005	订单已经通过cancel_currency_pay接口退款，不支持再退款
+268490006	代币的退款/支付操作金额不足
+268490007	图片或文字存在敏感内容，禁止使用
+268490008	代币未发布，不允许进行代币操作
+268490009	用户session_key不存在或已过期，请重新登录
+268490011	数据生成中，请稍后调用本接口获取
+268490012	批量任务运行中，请等待完成后才能再次运行
+268490013	禁止对核销状态的单进行退款
+268490014	退款操作进行中，稍后可以使用相同参数重试
+268490015	频率限制
+268490016	退款的left_fee字段与实际不符，请通过query_order接口查询确认
+268490018	广告金充值帐户行业 id 不匹配
+268490019	广告金充值帐户 id已绑定其他 appid
+268490020	广告金充值帐户主体名称错误
+268490021	账户未完成进件
+268490022	广告金充值账户无效
+268490023	广告金余额不足
+268490024	广告金充值金额必须大于 0
+query_user_balance
+地址
+https://api.weixin.qq.com/xpay/query_user_balance?access_token=xxx&pay_sig=xxx
+
+描述
+查询用户代币余额
+
+请求方法
+POST ， 请求参数为json字符串，Content-Type为application/json
+
+请求参数
+字段	类型	说明
+openid	string	用户的openid
+env	int	0-正式环境 1-沙箱环境
+user_ip	string	用户ip，例如:1.1.1.1
+返回参数
+字段	类型	说明
+errcode	int	错误码
+errmsg	string	错误信息
+balance	int	代币总余额，包括有价和赠送部分
+present_balance	int	赠送账户的代币余额
+sum_save	int	累计有价货币充值数量
+sum_present	int	累计赠送无价货币数量
+sum_balance	int	历史总增加的代币金额
+sum_cost	int	历史总消耗代币金额
+first_save_flag	bool	是否满足首充活动标记。0:不满足。1:满足
+备注
+1. 需要用户态签名与支付签名
+
+currency_pay
+地址
+https://api.weixin.qq.com/xpay/currency_pay?access_token=xxx&pay_sig=xxx&signature=xxx
+
+描述
+扣减代币（一般用于代币支付）
+
+请求方法
+POST ， 请求参数为json字符串，Content-Type为application/json
+
+请求参数
+字段	类型	说明
+openid	string	用户的openid
+env	int	0-正式环境 1-沙箱环境
+user_ip	string	用户ip，例如:1.1.1.1
+amount	int	支付的代币数量
+order_id	string	订单号
+payitem	string	物品信息。记录到账户流水中。如:[{"productid":"物品id", "unit_price": 单价, "quantity": 数量}]
+remark	string	备注
+返回参数
+字段	类型	说明
+errcode	int	错误码
+errmsg	string	错误信息
+order_id	string	订单号
+balance	int	总余额，包括有价和赠送部分
+used_present_amount	int	使用赠送部分的代币数量
+备注
+1. 使用用户态签名与支付签名
+
+query_order
+地址
+https://api.weixin.qq.com/xpay/query_order?access_token=xxx&pay_sig=xxx
+
+描述
+查询创建的订单（现金单，非代币单）
+
+请求方法
+POST ， 请求参数为json字符串，Content-Type为application/json
+
+请求参数
+字段	类型	说明
+openid	string	用户的openid
+env	int	0-正式环境 1-沙箱环境
+order_id	string	创建的订单号
+wx_order_id	string	微信内部单号(与order_id二选一)
+返回参数
+字段	类型	说明
+errcode	int	错误码
+errmsg	string	错误信息
+order	object	订单信息
+其中order的内容如下：
+
+字段	类型	说明
+order_id	string	订单号
+create_time	int	创建时间
+update_time	int	更新时间
+status	int	当前状态 0-订单初始化（未创建成功，不可用于支付）1-订单创建成功 2-订单已经支付，待发货 3-订单发货中 4-订单已发货 5-订单已经退款 6-订单已经关闭（不可再使用） 7-订单退款失败 8-用户退款完成 9-回收广告金完成 10-分账回退完成
+biz_type	int	业务类型0-短剧
+order_fee	int	订单金额，单位分
+coupon_fee	int	订单优惠金额，单位分(暂无此字段)
+paid_fee	int	用户支付金额
+order_type	int	订单类型0-支付单 1-退款单
+refund_fee	int	当类型为退款单时表示退款金额，单位分
+paid_time	int	支付/退款时间，unix秒级时间戳
+provide_time	int	发货时间
+biz_meta	string	订单创建时传的信息
+env_type	int	环境类型1-现网 2-沙箱
+token	string	下单时米大师返回的token
+left_fee	int	支付单类型时表示此单经过退款还剩余的金额，单位分
+wx_order_id	string	微信内部单号
+channel_order_id	string	渠道单号，为用户微信支付详情页面上的商户单号
+wxpay_order_id	string	微信支付交易单号，为用户微信支付详情页面上的交易单号
+sett_time	int	结算时间的秒级时间戳，大于0表示结算成功
+sett_state	int	结算状态0-未开始结算 1-结算中 2-结算成功 3-待结算（与0相同）
+platform_fee_fen	int	虚拟支付技术服务费，单位为分；sett_state = 2时返回
+cps_fee_fen	int	公众号、视频号平台的cps服务费，单位为分；sett_state = 2时返回
+备注
+1. 使用支付签名
+
+cancel_currency_pay
+地址
+https://api.weixin.qq.com/xpay/cancel_currency_pay?access_token=xxx&pay_sig=xxx
+
+描述
+代币支付退款(currency_pay接口的逆操作)
+
+请求方法
+POST ， 请求参数为json字符串，Content-Type为application/json
+
+请求参数
+字段	类型	说明
+openid	string	用户的openid
+env	int	0-正式环境 1-沙箱环境
+user_ip	string	用户ip，例如1.1.1.1
+pay_order_id	string	代币支付(调用currency_pay接口时)时传的order_id
+order_id	string	本次退款单的单号
+amount	int	退款金额
+返回参数
+字段	类型	说明
+errcode	int	错误码
+errmsg	string	错误信息
+order_id	string	退款订单号
+备注
+1. 需要支付签名与用户态签名
+
+notify_provide_goods
+地址
+https://api.weixin.qq.com/xpay/notify_provide_goods?access_token=xxx&pay_sig=xxx
+
+描述
+通知已经发货完成（只能通知现金单）,正常通过xpay_goods_deliver_notify消息推送返回成功就不需要调用这个api接口。这个接口用于异常情况推送不成功时手动将单改成已发货状态
+
+请求方法
+POST ， 请求参数为json字符串，Content-Type为application/json
+
+请求参数
+字段	类型	说明
+order_id	string	下单时传的单号
+wx_order_id	string	微信内部单号(与order_id二选一)
+env	int	0-正式环境 1-沙箱环境
+返回参数
+字段	类型	说明
+errcode	int	错误码
+errmsg	string	错误信息
+present_currency
+地址
+https://api.weixin.qq.com/xpay/present_currency?access_token=xxx&pay_sig=xxx
+
+描述
+代币赠送接口，由于目前不支付按单号查赠送单的功能，所以当需要赠送的时候可以一直重试到返回0或者返回268490004（重复操作）为止
+
+请求方法
+POST ， 请求参数为json字符串，Content-Type为application/json
+
+请求参数
+字段	类型	说明
+openid	string	用户的openid
+env	int	0-正式环境 1-沙箱环境
+order_id	string	赠送单号
+amount	int	赠送金额
+返回参数
+字段	类型	说明
+errcode	int	错误码
+errmsg	string	错误信息
+balance	int	赠送后用户的代币余额
+order_id	string	赠送单号
+present_balance	int	用户收到的总赠送金额
+download_bill
+地址
+https://api.weixin.qq.com/xpay/download_bill?access_token=xxx&pay_sig=xxx
+
+描述
+用于下载小程序账单，第一次调用触发生成下载url，可以间隔轮训来获取最终生成的下载url。
+
+请求方法
+POST ， 请求参数为json字符串，Content-Type为application/json
+
+请求参数
+字段	类型	说明
+begin_ds	int	起始时间（如20230801）
+end_ds	int	截止时间（如20230810）
+返回参数
+字段	类型	说明
+errcode	int	错误码
+errmsg	string	错误信息
+url	string	下载地址（有效时间为半小时，失效后需重新获取）
+备注
+1. 使用支付签名
+
+refund_order
+地址
+https://api.weixin.qq.com/xpay/refund_order?access_token=xxx&pay_sig=xxx
+
+描述
+对使用jsapi接口下的单进行退款，此接口只是启动退款任务成功，启动后需要调用query_order接口来查询退款单状态，等状态变成退款完成后即为最终成功
+
+请求方法
+POST ， 请求参数为json字符串，Content-Type为application/json
+
+请求参数
+字段	类型	说明
+openid	string	下单时的用户openid
+order_id	string	下单时的单号，即jsapi接口传入的OutTradeNo，与wx_order_id字段二选一
+wx_order_id	string	支付单对应的微信侧单号，与order_id字段二选一
+refund_order_id	string	本次退款时需要传的单号，长度为[8,32]，字符只允许使用字母、数字、'_'、'-'
+left_fee	int	当前单剩余可退金额，单位分，可以通过调用query_order接口查到
+refund_fee	int	本次退款金额，单位分，需要(0,left_fee]
+biz_meta	string	商家自定义数据，传入后可在query_order接口查询时原样返回，长度需要[0,1024]
+refund_reason	string	退款原因，当前仅支持以下值 0-暂无描述 1-产品问题，影响使用或效果不佳 2-售后问题，无法满足需求 3-意愿问题，用户主动退款 4-价格问题 5:其他原因
+req_from	string	退款来源，当前仅支持以下值 1-人工客服退款，即用户电话给客服，由客服发起退款流程 2-用户自己发起退款流程 3-其它
+env	int	0-正式环境 1-沙箱环境
+返回参数
+字段	类型	说明
+errcode	int	错误码
+errmsg	string	错误信息
+refund_order_id	string	退款单号
+refund_wx_order_id	string	退款单的微信侧单号
+pay_order_id	string	该退款单对应的支付单单号
+pay_wx_order_id	string	该退款单对应的支付单微信侧单号
+备注
+1. 使用支付签名
+
+create_withdraw_order
+地址
+https://api.weixin.qq.com/xpay/create_withdraw_order?access_token=xxx&pay_sig=xxx
+
+描述
+创建提现单
+
+请求方法
+POST ， 请求参数为json字符串，Content-Type为application/json
+
+请求参数
+字段	类型	说明
+withdraw_no	string	提现单单号，长度为[8,32]，字符只允许使用字母、数字、'_'、'-'
+withdraw_amount	string	提现的金额，单位元，例如提现1分钱请使用0.01，允许不传，不传的情况下表示全额提现
+env	int	0-正式环境 1-沙箱环境
+返回参数
+字段	类型	说明
+errcode	int	错误码
+errmsg	string	错误信息
+withdraw_no	string	提现单号
+wx_withdraw_no	string	提现单的微信侧单号
+备注
+1. 使用支付签名
+
+query_withdraw_order
+地址
+https://api.weixin.qq.com/xpay/query_withdraw_order?access_token=xxx&pay_sig=xxx
+
+描述
+创建提现单
+
+请求方法
+POST ， 请求参数为json字符串，Content-Type为application/json
+
+请求参数
+字段	类型	说明
+withdraw_no	string	提现单单号
+env	int	0-正式环境 1-沙箱环境
+返回参数
+字段	类型	说明
+errcode	int	错误码
+errmsg	string	错误信息
+withdraw_no	string	提现单号
+status	int	提现单的微信侧单号1-创建成功，提现中 2-提现成功 3-提现失败
+withdraw_amount	string	提现金额
+wx_withdraw_no	string	提现单的微信侧单号
+withdraw_success_timestamp	string	提现单成功的秒级时间戳
+create_time	string	提现单创建时间
+fail_reason	string	提现失败的原因
+备注
+1. 使用支付签名
+
+start_upload_goods
+地址
+https://api.weixin.qq.com/xpay/start_upload_goods?access_token=xxx&pay_sig=xxx
+
+描述
+启动批量上传道具任务，一次仅支持上传一个道具，多个道具需分多次请求
+
+请求方法
+POST ， 请求参数为json字符串，Content-Type为application/json
+
+请求参数
+字段	类型	说明
+upload_item	array	上传的商品列表
+env	int	0-正式环境 1-沙箱环境
+upload_item的每一项内容如下：
+
+字段	类型	说明
+id	string	道具id，长度(0,64]，字符只允许使用字母、数字、'_'、'-'
+name	string	道具名称，长度(0，20]
+price	int	道具单价，单位分，需要大于0
+remark	string	道具备注，长度(0,1024]
+item_url	string	道具图片的url地址，当前仅支持jpg,png等格式
+返回参数
+字段	类型	说明
+errcode	int	错误码
+errmsg	string	错误信息
+备注
+1. 使用支付签名
+
+query_upload_goods
+地址
+https://api.weixin.qq.com/xpay/query_upload_goods?access_token=xxx&pay_sig=xxx
+
+描述
+查询批量上传道具任务
+
+请求方法
+POST ， 请求参数为json字符串，Content-Type为application/json
+
+请求参数
+字段	类型	说明
+env	int	0-正式环境 1-沙箱环境
+返回参数
+字段	类型	说明
+errcode	int	错误码
+errmsg	string	错误信息
+upload_item	array	上传的道具列表
+status	int	0-无任务在运行 1-任务运行中 2-上传失败或部分失败（上传任务已经完成） 3-上传成功
+upload_item的每一项内容如下：
+
+字段	类型	说明
+id	string	道具id
+name	string	道具名称
+price	int	道具单价，单位分
+remark	string	道具备注
+item_url	string	道具图片的url地址（微信转存后）
+upload_status	int	0-上传中 1-id已经存在 2-上传成功 3-上传失败
+errmsg	string	上传失败的原因
+备注
+1. 使用支付签名
+
+start_publish_goods
+地址
+https://api.weixin.qq.com/xpay/start_publish_goods?access_token=xxx&pay_sig=xxx
+
+描述
+启动批量发布道具任务，一次仅支持发布一个道具，多个道具需分多次请求
+
+请求方法
+POST ， 请求参数为json字符串，Content-Type为application/json
+
+请求参数
+字段	类型	说明
+publish_item	array	发布的商品列表
+env	int	0-正式环境 1-沙箱环境
+publish_item的每一项内容如下：
+
+字段	类型	说明
+id	string	道具id，添加到开发环境时传的道具id
+返回参数
+字段	类型	说明
+errcode	int	错误码
+errmsg	string	错误信息
+备注
+1. 使用支付签名
+
+query_publish_goods
+地址
+https://api.weixin.qq.com/xpay/query_publish_goods?access_token=xxx&pay_sig=xxx
+
+描述
+查询批量发布道具任务
+
+请求方法
+POST ， 请求参数为json字符串，Content-Type为application/json
+
+请求参数
+字段	类型	说明
+env	int	0-正式环境 1-沙箱环境
+返回参数
+字段	类型	说明
+errcode	int	错误码
+errmsg	string	错误信息
+publish_item	array	发布的道具列表
+status	int	0-无任务在运行 1-任务运行中 2-上传失败或部分失败（上传任务已经完成） 3-上传成功
+upload_item的每一项内容如下：
+
+字段	类型	说明
+id	string	道具id
+publish_status	int	0-上传中 1-id已经存在 2-发布成功 3-发布失败
+errmsg	string	发布失败的原因
+备注
+1. 使用支付签名
+
+query_biz_balance
+地址
+https://api.weixin.qq.com/xpay/query_biz_balance?access_token=xxx&pay_sig=xxx
+
+描述
+查询商家账户里的可提现余额
+
+请求方法
+POST ， 请求参数为json字符串，Content-Type为application/json
+
+请求参数
+字段	类型	说明
+env	int	0-正式环境 1-沙箱环境（仅作为签名校验，查询的结果都是正式环境的）
+返回参数
+字段	类型	说明
+errcode	int	错误码
+errmsg	string	错误信息
+balance_available	object	可提现余额
+其中balance_available内容如下：
+
+字段	类型	说明
+amount	string	可提现余额，单位元
+currency_code	string	币种（一般为CNY）
+备注
+1. 使用支付签名
+
+query_transfer_account
+地址
+https://api.weixin.qq.com/xpay/query_transfer_account?access_token=xxx&pay_sig=xxx
+
+描述
+查询广告金充值账户
+
+请求方法
+POST ， 请求参数为json字符串，Content-Type为application/json
+
+请求参数
+字段	类型	说明
+env	Number	0-正式环境 1-沙箱环境（仅作为签名校验，查询的结果都是正式环境的）
+返回参数
+字段	类型	说明
+acct_list	Array	广告金充值账户列表
+errcode	Number	错误码
+errmsg	String	错误信息
+acct_list的每一项内容如下：
+
+字段	类型	说明
+transfer_account_name	String	充值账户名称
+transfer_account_uid	Number	充值账户 uid
+transfer_account_agency_id	Number	充值账户服务商账号 id
+transfer_account_agency_name	String	充值账户服务商账号名称
+state	Number	0-待审核，1-审核通过，2-审核驳回
+bind_result	Number	1-绑定成功，2-绑定失败
+error_msg	String	错误信息
+query_adver_funds
+地址
+https://api.weixin.qq.com/xpay/query_adver_funds?access_token=xxx&pay_sig=xxx
+
+描述
+查询广告金发放记录
+
+请求方法
+POST ， 请求参数为json字符串，Content-Type为application/json
+
+请求参数
+字段	类型	说明
+page	Number	查询页码，不小于 1
+page_size	Number	每页记录数量
+filter	Object	查询过滤条件
+env	Number	0-正式环境 1-沙箱环境（仅作为签名校验，查询的结果都是正式环境的）
+filter的每一项内容如下：
+
+字段	类型	说明
+settle_begin	Number	查询结算周期开始时间，unix秒级时间戳
+settle_end	Number	查询结算周期结束时间，unix秒级时间戳
+fund_type	Number	(可选)广告金发放原因， 0:通用赠送，1:广告激励，2:定向激励
+返回参数
+字段	类型	说明
+adver_funds_list	Array	广告金发放记录列表
+total_page	Number	查询命中总的页数
+errcode	Number	错误码
+errmsg	String	错误信息
+adver_funds_list的每一项内容如下：
+
+字段	类型	说明
+settle_begin	Number	结算周期开始时间，unix秒级时间戳
+settle_end	Number	查算周期结束时间，unix秒级时间戳
+total_amount	Number	发放广告金金额，单位分
+remain_amount	Number	剩余可用广告金金额，单位分
+expire_time	Number	广告金过期时间，unix秒级时间戳
+fund_type	Number	广告金发放原因， 0:通用赠送，1:广告激励，2:定向激励
+fund_id	String	广告金发放ID
+create_funds_bill
+地址
+https://api.weixin.qq.com/xpay/create_funds_bill?access_token=xxx&pay_sig=xxx
+
+描述
+充值广告金
+
+请求方法
+POST ， 请求参数为json字符串，Content-Type为application/json
+
+请求参数
+字段	类型	说明
+transfer_amount	Number	充值金额，单位分
+transfer_account_uid	Number	充值账户 uid
+transfer_account_name	String	充值账户名称
+transfer_account_agency_id	Number	充值账户服务商账号 id
+request_id	String	用户定义每一次请求的唯一 id，相同 id 的不同请求视为重复请求(不超过 1024 个字符)
+settle_begin	Number	充值所使用的广告金对应的结算周期开始时间，unix秒级时间戳
+settle_end	Number	充值所使用的广告金对应的结算周期结束时间，unix秒级时间戳
+env	Number	0-正式环境 1-沙箱环境（仅作为签名校验，查询的结果都是正式环境的）
+authorize_advertise	Number	是否授权广告数据, 0:否，1:是
+fund_type	Number	广告金发放原因， 0:通用赠送，1:广告激励，2:定向激励
+返回参数
+字段	类型	说明
+errcode	Number	错误码
+errmsg	String	错误信息
+bill_id	String	充值单 id
+bind_transfer_accout
+地址
+https://api.weixin.qq.com/xpay/bind_transfer_accout?access_token=xxx&pay_sig=xxx
+
+描述
+绑定广告金充值账户
+
+请求方法
+POST ， 请求参数为json字符串，Content-Type为application/json
+
+请求参数
+字段	类型	说明
+transfer_account_uid	Number	充值账户 uid
+transfer_account_org_name	String	充值账户主体名称
+env	Number	0-正式环境 1-沙箱环境（仅作为签名校验，查询的结果都是正式环境的）
+返回参数
+字段	类型	说明
+errcode	Number	错误码
+errmsg	String	错误信息
+query_funds_bill
+地址
+https://api.weixin.qq.com/xpay/query_funds_bill?access_token=xxx&pay_sig=xxx
+
+描述
+查询广告金充值记录
+
+请求方法
+POST ， 请求参数为json字符串，Content-Type为application/json
+
+请求参数
+字段	类型	说明
+page	Number	查询页码，不小于 1
+page_size	Number	每页记录数量
+filter	Object	查询过滤条件
+env	Number	0-正式环境 1-沙箱环境（仅作为签名校验，查询的结果都是正式环境的）
+filter的每一项内容如下：
+
+字段	类型	说明
+oper_time_begin	Number	查询充值开始时间，unix秒级时间戳
+oper_time_end	Number	查询充值结束时间，unix秒级时间戳
+bill_id	String	(可选)广告金充值单 ID
+request_id	String	(可选)调用接口 create_funds_bill 进行广告金充值时传入的 request_id 字段
+返回参数
+字段	类型	说明
+bill_list	Array	广告金充值记录列表
+total_page	Number	查询命中总的页数
+errcode	Number	错误码
+errmsg	String	错误信息
+bill_list的每一项内容如下：
+
+字段	类型	说明
+bill_id	String	充值单 ID
+oper_time	Number	充值时间，unix秒级时间戳
+settle_begin	Number	对应广告金结算周期开始时间，unix秒级时间戳
+settle_end	Number	对应广告金结算周期结束时间，unix秒级时间戳
+fund_id	String	对应广告金ID
+transfer_account_name	String	充值账户
+transfer_account_uid	Number	充值账户UID
+transfer_amount	Number	充值金额，单位：分
+status	Number	广告金充值状态：0-充值中，1-充值成功，2-充值失败
+request_id	String	调用接口 create_funds_bill 进行广告金充值时传入的 request_id 字段
+query_recover_bill
+地址
+https://api.weixin.qq.com/xpay/query_recover_bill?access_token=xxx&pay_sig=xxx
+
+描述
+查询广告金回收记录
+
+请求方法
+POST ， 请求参数为json字符串，Content-Type为application/json
+
+请求参数
+字段	类型	说明
+page	Number	查询页码，不小于 1
+page_size	Number	每页记录数量
+filter	Object	查询过滤条件
+env	Number	0-正式环境 1-沙箱环境（仅作为签名校验，查询的结果都是正式环境的）
+filter的每一项内容如下：
+
+字段	类型	说明
+recover_time_begin	Number	查询回收开始时间，unix秒级时间戳
+recover_time_end	Number	查询回收结束时间，unix秒级时间戳
+bill_id	String	(可选)广告金回收单 ID
+返回参数
+字段	类型	说明
+bill_list	Array	广告金回收记录列表
+total_page	Number	查询命中总的页数
+errcode	Number	错误码
+errmsg	String	错误信息
+bill_list的每一项内容如下：
+
+字段	类型	说明
+bill_id	String	回收单 ID
+recover_time	Number	回收时间，unix秒级时间戳
+settle_begin	Number	结算周期开始时间，unix秒级时间戳
+settle_end	Number	查算周期结束时间，unix秒级时间戳
+fund_id	String	对应的发放广告金ID
+recover_account_name	String	回收广告金账户
+recover_amount	Number	回收金额，单位：分
+refund_order_list	Array	对应的退款订单 id
+get_complaint_list
+地址
+https://api.weixin.qq.com/xpay/get_complaint_list?access_token=xxx&pay_sig=xxx
+
+描述
+获取投诉列表
+
+请求方法
+POST ， 请求参数为json字符串，Content-Type为application/json
+
+请求参数
+字段	类型	说明
+env	int	0-正式环境 1-沙箱环境（仅作为签名校验，查询的结果都是正式环境的）
+begin_date	string	筛选开始时间，格式为yyyy-mm-dd,如“2023-01-01”
+end_date	string	筛选结束时间，格式为yyyy-mm-dd,如“2023-01-01”
+offset	int	筛选偏移，从0开始
+limit	int	筛选最多返回条数
+返回参数
+字段	类型	说明
+errcode	int	错误码
+errmsg	string	错误信息
+total	int	总条数
+complaints	array	投诉列表
+其中complaints内容如下：
+
+字段	类型	说明
+complaint_id	string	投诉id
+complaint_time	string	投诉时间 格式为yyyy-mm-dd'T'HH:MM:ssXXX，其中XXX为时区偏移，例如：2023-11-28T11:11:49+08:00
+complaint_detail	string	投诉内容
+complaint_state	string	投诉状态 PENDING-待处理；PROCESSING-处理中；PROCESSED-已处理完成
+payer_phone	string	投诉人联系方式
+payer_openid	string	投诉人在商户AppID下的唯一标识
+complaint_order_info	array	投诉单关联订单信息
+complaint_full_refunded	bool	投诉单下所有订单是否已全部全额退款
+incoming_user_response	bool	投诉单是否有待回复的用户留言
+user_complaint_times	int	用户投诉次数。用户首次发起投诉记为1次，用户每有一次继续投诉就加1
+complaint_media_list	array	户上传的投诉相关资料，包括图片凭证等
+problem_description	string	用户发起投诉前选择的faq标题
+problem_type	string	问题类型为申请退款的单据是需要最高优先处理的单据。REFUND: 申请退款；SERVICE_NOT_WORK: 服务权益未生效；OTHERS: 其他类型
+apply_refund_amount	int	当问题类型为申请退款时, 有值, (单位:分)
+user_tag_list	array	用户标签列表，每一项内容为string。TRUSTED: 此类用户满足极速退款条件；HIGH_RISK: 高风险投诉，请按照运营要求优先妥善处理
+service_order_info	array	投诉单关联服务单信息
+其中complaint_order_info的每一期内容为：
+
+字段	类型	说明
+transaction_id	string	投诉单关联的微信支付交易单号
+out_trade_no	string	渠道单号，query_order接口返回的channel_order_id
+amount	int	订单金额，单位（分）
+wxa_out_trade_no	string	商户单号，商家在拉走支付时传的单号
+wx_order_id	string	小程序侧单号
+其中complaint_media_list每一项内容为：
+
+字段	类型	说明
+media_type	string	体文件对应的业务类型，USER_COMPLAINT_IMAGE: 用户提交投诉时上传的图片凭证；OPERATION_IMAGE: 用户、商户、微信支付客服在协商解决投诉时，上传的图片凭证
+media_url	array	每一项的内容为string，媒体文件请求url
+其中service_order_info每一项内容为：
+
+字段	类型	说明
+order_id	string	微信支付服务订单号，每个微信支付服务订单号与商户号下对应的商户服务订单号一一对应
+out_order_no	string	商户系统内部服务订单号（不是交易单号），与创建订单时一致
+state	string	此处上传的是用户发起投诉时的服务单状态，不会实时更新。DOING: 服务订单进行中；REVOKED: 服务订单已取消；WAITPAY: 服务订单待支付；DONE: 服务订单已完成
+备注
+1. 使用支付签名
+
+get_complaint_detail
+地址
+https://api.weixin.qq.com/xpay/get_complaint_detail?access_token=xxx&pay_sig=xxx
+
+描述
+获取投诉详情
+
+请求方法
+POST ， 请求参数为json字符串，Content-Type为application/json
+
+请求参数
+字段	类型	说明
+env	int	0-正式环境 1-沙箱环境（仅作为签名校验，查询的结果都是正式环境的）
+complaint_id	string	投诉id，get_complaint_list接口返回
+返回参数
+字段	类型	说明
+errcode	int	错误码
+errmsg	string	错误信息
+complaint	object	与get_complaint_list接口的complaints一致
+备注
+1. 使用支付签名
+
+get_negotiation_history
+地址
+https://api.weixin.qq.com/xpay/get_negotiation_history?access_token=xxx&pay_sig=xxx
+
+描述
+获取协商历史
+
+请求方法
+POST ， 请求参数为json字符串，Content-Type为application/json
+
+请求参数
+字段	类型	说明
+env	int	0-正式环境 1-沙箱环境（仅作为签名校验，查询的结果都是正式环境的）
+complaint_id	string	投诉id，get_complaint_list接口返回
+offset	int	筛选偏移，从0开始
+limit	int	筛选最多返回条数
+返回参数
+字段	类型	说明
+errcode	int	错误码
+errmsg	string	错误信息
+total	int	总条数
+history	array	协商历史
+其中history的每一项内容为：
+
+字段	类型	说明
+log_id	string	操作流水号
+operator	string	当前投诉协商记录的操作人
+operate_time	string	当前操作时间，格式为yyyy-mm-dd'T'HH:MM:ssXXX，其中XXX为时区偏移，例如：2023-11-28T11:11:49+08:00
+operate_type	string	当前投诉协商记录的操作类型，对应枚举： USER_CREATE_COMPLAINT: 用户提交投诉 USER_CONTINUE_COMPLAINT: 用户继续投诉 USER_RESPONSE: 用户留言 PLATFORM_RESPONSE: 平台留言 MERCHANT_RESPONSE: 商户留言 MERCHANT_CONFIRM_COMPLETE: 商户申请结单 USER_CREATE_COMPLAINT_SYSTEM_MESSAGE: 用户提交投诉系统通知 COMPLAINT_FULL_REFUNDED_SYSTEM_MESSAGE: 投诉单发起全额退款系统通知 USER_CONTINUE_COMPLAINT_SYSTEM_MESSAGE: 用户继续投诉系统通知 USER_REVOKE_COMPLAINT: 用户主动撤诉（只存在于历史投诉单的协商历史中） USER_COMFIRM_COMPLAINT: 用户确认投诉解决（只存在于历史投诉单的协商历史中） PLATFORM_HELP_APPLICATION: 平台催办 USER_APPLY_PLATFORM_HELP: 用户申请平台协助 MERCHANT_APPROVE_REFUND: 商户同意退款申请 MERCHANT_REFUSE_RERUND: 商户拒绝退款申请, 此时操作内容里展示拒绝原因 USER_SUBMIT_SATISFACTION: 用户提交满意度调查结果,此时操作内容里会展示满意度分数 SERVICE_ORDER_CANCEL: 服务订单已取消 SERVICE_ORDER_COMPLETE: 服务订单已完成 COMPLAINT_PARTIAL_REFUNDED_SYSTEM_MESSAGE: 投诉单发起部分退款系统通知 COMPLAINT_REFUND_RECEIVED_SYSTEM_MESSAGE: 投诉单退款到账系统通知 COMPLAINT_ENTRUSTED_REFUND_SYSTEM_MESSAGE: 投诉单受托退款系统通知
+operate_details	string	当前投诉协商记录的具体内容
+complaint_media_list	array	投诉单执行操作时上传的资料凭证，包含用户、商户、微信支付客服等角色操作
+其中complaint_media_list每一项的内容如下：
+
+字段	类型	说明
+media_type	string	媒体文件对应的业务类型，USER_COMPLAINT_IMAGE: 用户提交投诉时上传的图片凭证；OPERATION_IMAGE: 用户、商户、微信支付客服在协商解决投诉时，上传的图片凭证
+media_url	array	每一项的内容为string，媒体文件请求url
+备注
+1. 使用支付签名
+
+response_complaint
+地址
+https://api.weixin.qq.com/xpay/response_complaint?access_token=xxx&pay_sig=xxx
+
+描述
+回复用户
+
+请求方法
+POST ， 请求参数为json字符串，Content-Type为application/json
+
+请求参数
+字段	类型	说明
+env	int	0-正式环境 1-沙箱环境（仅作为签名校验，查询的结果都是正式环境的）
+complaint_id	string	投诉id，get_complaint_list接口返回
+response_content	string	回复内容
+response_images	array	每一项的内容为string，传upload_vp_file接口返回的file_id
+返回参数
+字段	类型	说明
+errcode	int	错误码
+errmsg	string	错误信息
+备注
+1. 使用支付签名
+
+complete_complaint
+地址
+https://api.weixin.qq.com/xpay/complete_complaint?access_token=xxx&pay_sig=xxx
+
+描述
+完成投诉处理
+
+请求方法
+POST ， 请求参数为json字符串，Content-Type为application/json
+
+请求参数
+字段	类型	说明
+env	int	0-正式环境 1-沙箱环境（仅作为签名校验，查询的结果都是正式环境的）
+complaint_id	string	投诉id，get_complaint_list接口返回
+返回参数
+字段	类型	说明
+errcode	int	错误码
+errmsg	string	错误信息
+备注
+1. 使用支付签名
+
+upload_vp_file
+地址
+https://api.weixin.qq.com/xpay/upload_vp_file?access_token=xxx&pay_sig=xxx
+
+描述
+上传媒体文件（如图片，凭证等）
+
+请求方法
+POST ， 请求参数为json字符串，Content-Type为application/json
+
+请求参数
+字段	类型	说明
+env	int	0-正式环境 1-沙箱环境（仅作为签名校验，查询的结果都是正式环境的）
+base64_img	string	经base64编码后的图片内容，使用这个字段最多只能传1m的图片，超过1m请使用img_url字段
+img_url	string	图片url，需要能直接下载，不能是返回302等返回码的地址，最高允许传2m图片（优先使用img_url）
+file_name	string	图片名称
+返回参数
+字段	类型	说明
+errcode	int	错误码
+errmsg	string	错误信息
+file_id	string	返回文件id
+备注
+1. 使用支付签名
+
+get_upload_file_sign
+地址
+https://api.weixin.qq.com/xpay/get_upload_file_sign?access_token=xxx&pay_sig=xxx
+
+描述
+获取微信支付反馈投诉图片的签名头部
+
+请求方法
+POST ， 请求参数为json字符串，Content-Type为application/json
+
+请求参数
+字段	类型	说明
+env	int	0-正式环境 1-沙箱环境（仅作为签名校验，查询的结果都是正式环境的）
+wxpay_url	string	微信支付的图片地址格式为"https://api.mch.weixin.qq.com/v3/merchant-service/images/{xxxxxx}"
+convert_cos	bool	是否转存到cos，转存后可以获得图片的临时下载地址，30分钟有效
+complaint_id	string	对应的反馈投诉id
+返回参数
+字段	类型	说明
+errcode	int	错误码
+errmsg	string	错误信息
+sign	string	返回微信支付图片请求的Authorization头部值，具体使用方法可查看备注
+cos_url	string	当convert_cos为true时才有意义，返回转存后的url地址，30分钟有效
+备注
+1.使用支付签名
+
+2.微信支付的图片资源下载需要在http请求的时候必填以下3个头部信息，否则会报错
+
+Authorization，签名验证，由本接口的sign返回
+Accept，值需要是"application/json"
+User-Agent，UA不能为空
+download_adverfunds_order
+地址
+https://api.weixin.qq.com/xpay/download_adverfunds_order?access_token=xxx&pay_sig=xxx
+
+描述
+下载广告金对应的商户订单信息
+
+请求方法
+POST ， 请求参数为json字符串，Content-Type为application/json
+
+请求参数
+字段	类型	说明
+fund_id	String	广告金发放ID
+env	Number	0-正式环境 1-沙箱环境（仅作为签名校验，查询的结果都是正式环境的）
+返回参数
+字段	类型	说明
+errcode	Number	错误码
+errmsg	String	错误信息
+url	String	订单下载链接
+备注
+当前仅支持通用赠送广告金对应订单下载
+第一次调用触发生成下载url，可以间隔轮训来获取最终生成的下载url。
+消息推送
+推送响应格式说明
+注：如果推送响应格式不对，微信会重新推送，最多试15次
+
+目前支持三种方式：
+
+【推荐】文档中列的ErrCode方式
+推送内容为xml格式时，响应内容需要是xml格式
+
+<xml><Errcode>0</ErrCode><ErrMsg><![CDATA[success]]></ErrMsg></xml>
+同理推送内容为json格式时，响应内容需要是json格式
+
+{"ErrCode":0,"ErrMsg":"success"}
+相应内容为空 或者success，表示成功（等价于第一种的ErrCode = 0）
+道具发货推送xpay_goods_deliver_notify
+请求参数
+字段	类型	说明
+ToUserName	String	小程序原始ID
+FromUserName	String	该事件消息的openid，道具发货场景固定为微信官方的openid
+CreateTime	Number	消息发送时间
+MsgType	String	消息类型，固定为：event
+Event	String	事件类型
+ xpay_goods_deliver_notify
+OpenId	String	用户openid
+OutTradeNo	String	业务订单号
+Env	Number	环境配置
+ 0：现网环境（也叫正式环境）
+ 1：沙箱环境
+WeChatPayInfo	Object	微信支付信息 非微信支付渠道可能没有
+GoodsInfo	Object	道具参数信息
+TeamInfo	Object	拼团信息
+WeChatPayInfo内容如下：
+
+字段	类型	说明
+MchOrderNo	String	微信支付商户单号
+TransactionId	String	交易单号（微信支付订单号）
+PaidTime	Number	用户支付时间，Linux秒级时间戳
+GoodsInfo内容如下：
+
+字段	类型	说明
+ProductId	String	道具ID
+Quantity	Number	数量
+OrigPrice	Number	物品原始价格 （单位：分）
+ActualPrice	Number	物品实际支付价格（单位：分）
+Attach	String	透传信息
+TeamInfo内容如下：
+
+字段	类型	说明
+ActivityId	String	活动id
+TeamId	String	团id
+TeamType	Number	团类型1-支付全部，拼成退款
+TeamAction	0-创团 1-参团	
+返回参数
+字段	类型	是否必填	说明
+ErrCode	Number	是	发送状态。0：成功，其他：失败 todo
+ErrMsg	String	否	错误原因，用于调试。在errcode非0 的情况下可以返回
+代币支付推送xpay_coin_pay_notify
+请求参数
+字段	类型	说明
+ToUserName	String	小程序原始ID
+FromUserName	String	该事件消息的openid，道具发货场景固定为微信官方的openid
+CreateTime	Number	消息发送时间
+MsgType	String	消息类型，固定为：event
+Event	String	事件类型
+xpay_coin_pay_notify
+OpenId	String	用户openid
+OutTradeNo	String	业务订单号
+Env	Number	环境配置0：现网环境（也叫正式环境） 1：沙箱环境
+WeChatPayInfo	Object	微信支付信息 非微信支付渠道可能没有
+CoinInfo	Object	代币参数信息
+WeChatPayInfo内容如下：
+
+字段	类型	说明
+MchOrderNo	String	微信支付商户单号
+TransactionId	String	交易单号（微信支付订单号）
+PaidTime	Number	用户支付时间，Linux秒级时间戳
+CoinInfo内容如下：
+
+字段	类型	说明
+Quantity	Number	数量
+OrigPrice	Number	物品原始价格 （单位：分）
+ActualPrice	Number	物品实际支付价格（单位：分）
+Attach	String	透传信息
+返回参数
+字段	类型	是否必填	说明
+ErrCode	Number	是	发送状态。0：成功，其他：失败 todo
+ErrMsg	String	否	错误原因，用于调试。在errcode非0 的情况下可以返回
+退款推送xpay_refund_notify
+请求参数
+字段	类型	说明
+ToUserName	String	小程序原始ID
+FromUserName	String	该事件消息的openid，道具发货场景固定为微信官方的openid
+CreateTime	Number	消息发送时间
+MsgType	String	消息类型，固定为：event
+Event	String	事件类型
+xpay_refund_notify
+OpenId	String	用户openid
+WxRefundId	String	微信退款单号
+MchRefundId	String	商户退款单号
+WxOrderId	String	退款单对应支付单的微信单号
+MchOrderId	String	退款单对应支付单的商户单号
+RefundFee	Number	退款金额，单位分
+RetCode	Number	退款结果，0为成功，非0为失败
+RetMsg	String	退款结果详情，失败时为退款失败的原因
+RefundStartTimestamp	Number	开始退款时间，秒级时间戳
+RefundSuccTimestamp	Number	结束退款时间，秒级时间戳
+WxpayRefundTransactionId	String	退款单的微信支付单号
+RetryTimes	Number	重试次数，从0开始。重试间隔为2 4 8 16...最多15次
+TeamInfo	Object	拼团信息
+TeamInfo内容如下：
+
+字段	类型	说明
+ActivityId	String	活动id
+TeamId	String	团id
+TeamType	Number	团类型1-支付全部，拼成退款
+TeamAction	0-创团 1-参团	
+返回参数
+字段	类型	是否必填	说明
+ErrCode	Number	是	发送状态。0：成功，其他：失败 todo
+ErrMsg	String	否	错误原因，用于调试。在errcode非0 的情况下可以返回
+用户投诉推送xpay_complaint_notify
+请求参数
+字段	类型	说明
+ToUserName	String	小程序原始ID
+FromUserName	String	该事件消息的openid，道具发货场景固定为微信官方的openid
+CreateTime	Number	消息发送时间
+MsgType	String	消息类型，固定为：event
+Event	String	事件类型
+xpay_complaint_notify
+OpenId	String	用户openid
+WxOrderId	String	微信单号
+MchOrderId	String	商户单号
+ComplaintTime	Number	投诉时间，秒级时间戳
+RetryTimes	Number	重试次数，从0开始。重试间隔为2 4 8 16...最多15次
+RequestId	String	请求编号
+返回参数
+字段	类型	是否必填	说明
+ErrCode	Number	是	发送状态。0：成功，其他：失败 todo
+ErrMsg	String	否	错误原因，用于调试。在errcode非0 的情况下可以返回
+2.4.签名详解
+用户态签名和支付签名在基础库wx.requestVirtualPayment和服务器API中都会涉及
+
+支付签名
+签名算法伪代码为：
+
+paySig = to_hex(hmac_sha256(appKey,uri + '&' + signData))
+参数	wx API	服务器API
+appKey	可通过小程序MP查看：虚拟支付 -> 基本配置 -> 基础配置中的沙箱AppKey和现网AppKey。注意：记得根据env值选择不同AppKey，env = 0对应现网AppKey，env = 1对应沙箱AppKey	同理
+signData	基础库的signData字段	api的post body
+uri	固定填requestVirtualPayment	举例：对于https://api.weixin.qq.com/xpay/query_user_balance来说，uri = /xpay/query_user_balance
+可参考下面的calc_pay_sig函数
+
+
+用户态签名
+签名算法伪代码为：
+
+signature = to_hex(hmac_sha256(sessionKey,signData))
+参数	wx API	服务器API
+sessionKey	session_key	同理
+signData	基础库的signData字段	api的post body
+参考的python脚本
+以调用query_user_balance接口为例，签名计算如下：
+
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+""" pay_sig签名算法计算示例 """
+
+import hmac
+import hashlib
+import json
+import time
+
+def calc_pay_sig(uri, post_body, appkey):
+    """ pay_sig签名算法
+      Args:
+     uri - 当前请求的API的uri部分，不带query_string 例如：/xpay/query_user_balance
+          post_body - http POST的数据包体
+          appkey    - 对应环境的AppKey
+      Returns:
+          支付请求签名pay_sig
+    """
+    need_sign_msg = uri + '&' + post_body
+    pay_sig = hmac.new(key = appkey.encode('utf-8'), msg = need_sign_msg.encode('utf-8'),
+                       digestmod=hashlib.sha256).hexdigest()
+    return pay_sig
+
+def calc_signature(post_body, session_key):
+    """ 用户登录态signature签名算法
+      Args:
+          post_body   - http POST的数据包体
+          session_key - 当前用户有效的session_key，参考auth.code2Session接口
+      Returns:
+          用户登录态签名signature
+    """
+    need_sign_msg = post_body
+    signature = hmac.new(key = session_key.encode('utf-8'), msg = need_sign_msg.encode('utf-8'),
+                       digestmod=hashlib.sha256).hexdigest()
+    return signature
+
+# uri，切记不可带参数，即去掉"?"及后面的部分
+# 如果是基础库的wx.requestVirtualPayment，uri固定为requestVirtualPayment
+uri = '/xpay/query_user_balance'
+
+# 此处appkey为假设值，实际使用应根据支付环境(env参数)替换为对应的AppKey
+appkey = "12345"
+
+# 注意：JSON数据序列化结果，不同语言/版本结果可能不同
+# 所以示例为了保证稳定性，直接用其中一个序列化的版本
+# 实际使用时只需要保证，参与签名的post_body和真正发起http请求的一致即可
+"""
+# 不同接口要求的Post Body参数不一样，此处以query_user_balance接口为例(和uri对应）
+post_body = json.dumps({
+    "openid": "xxx",
+    "user_ip": "127.0.0.1",
+    "env": 0
+})
+"""
+post_body = '{"openid": "xxx", "user_ip": "127.0.0.1", "env": 0}'
+
+# step1. pay_sig签名计算（支付请求签名算法）
+pay_sig = calc_pay_sig(uri, post_body, appkey)
+print("pay_sig:", pay_sig)
+
+# 若实际请求返回pay_sig签名不对，根据以下步骤排查：
+# 1. 确认算法：uri、post_body、appkey写死以上参数，确保你的签名算法和示例calc_pay_sig结果完全一致
+# 2. 确认参数：
+#    - uri不可带参数（即"?"及后续部分全部舍去）
+#    - post_body必须和真正发起HTTP请求的post body完全一致
+#    - appkey必须是与请求中对应的环境匹配（env参数决定）
+assert pay_sig == "c37809f27c6d7fd1837ad2500a04512b66b34fd793a39a385fade56dca89a4b5"
+
+# step2. signature签名计算（用户登录态签名算法）
+# session_key需要为当前用户有效session_key（参考auth.code2Session接口获取）
+# 此处写死方便复现算法
+session_key = "9hAb/NEYUlkaMBEsmFgzig=="
+signature = calc_signature(post_body, session_key)
+print("signature:", signature)
+
+# 若实际请求返回signature签名不对，参考随后的“90010-signature签名错误问题排查思路”进行排查
+assert signature == "089d9e8dc5d308977360c4b79ec600a93d736802802a807d634192328032f6c7"

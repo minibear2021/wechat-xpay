@@ -1,133 +1,132 @@
-# WeChat XPay Python SDK
+# 微信支付虚拟支付 Python SDK
 
-Python SDK for WeChat XPay (Virtual Payment) server-side APIs.
+微信支付虚拟支付（XPay）服务端 API 的 Python SDK。
 
-## Features
+## 特性
 
-- ✅ **Sync & Async** - Supports both synchronous and asynchronous operations
-- ✅ **Type Hints** - Full type annotation support
-- ✅ **HTTP/2** - Built on httpx with HTTP/2 support
-- ✅ **Webhook Parser** - Handle WeChat push notifications
-- ✅ **Error Handling** - Comprehensive exception hierarchy with error codes
+- ✅ **同步与异步** - 同时支持同步和异步操作
+- ✅ **类型提示** - 完整的类型注解支持
+- ✅ **HTTP/2** - 基于 httpx，支持 HTTP/2
+- ✅ **Webhook 解析** - 处理微信推送通知
+- ✅ **错误处理** - 完善的异常层次结构和错误码
 
-## Installation
+## 安装
 
 ```bash
 pip install wechat-xpay
 ```
 
-## Quick Start
+## 快速开始
 
-### Synchronous Client
+### 同步客户端
 
 ```python
 from wechat_xpay import XPayClient
 
-# Using context manager (recommended)
+# 使用上下文管理器（推荐）
 with XPayClient(
-    app_id="your_app_id",
-    app_key="your_app_key",
-    env=0,  # 0=sandbox, 1=production
+    app_id="你的_app_id",
+    app_key="你的_app_key",
+    env=0,  # 0=沙箱环境，1=生产环境
 ) as client:
-    # session_key is passed per API call because it expires periodically
+    # session_key 在每次调用 API 时传入，因为它会定期过期
     balance = client.query_user_balance(
-        openid="user_openid",
-        session_key="user_session_key",
+        openid="用户_openid",
+        session_key="用户_session_key",
     )
-    print(f"Balance: {balance.balance}")
-    print(f"Present Balance: {balance.present_balance}")
+    print(f"余额: {balance.balance}")
+    print(f"赠送余额: {balance.present_balance}")
 ```
 
-### Asynchronous Client
+### 异步客户端
 
 ```python
 import asyncio
 from wechat_xpay import XPayAsyncClient
 
 async def main():
-    # Using async context manager (recommended)
+    # 使用异步上下文管理器（推荐）
     async with XPayAsyncClient(
-        app_id="your_app_id",
-        app_key="your_app_key",
+        app_id="你的_app_id",
+        app_key="你的_app_key",
         env=0,
     ) as client:
         balance = await client.query_user_balance(
-            openid="user_openid",
-            session_key="user_session_key",
+            openid="用户_openid",
+            session_key="用户_session_key",
         )
-        print(f"Balance: {balance.balance}")
-        print(f"Present Balance: {balance.present_balance}")
+        print(f"余额: {balance.balance}")
+        print(f"赠送余额: {balance.present_balance}")
 
 asyncio.run(main())
 ```
 
-## Why session_key is passed per API call?
+## 为什么 session_key 要在每次调用时传入？
 
-WeChat's `session_key` has a lifecycle and expires periodically (typically 30 days).
-When it expires, you need to re-authorize the user to get a new `session_key`.
+微信的 `session_key` 有生命周期，会定期过期（通常 30 天）。当它过期时，你需要重新授权用户获取新的 `session_key`。
 
-By passing `session_key` per API call instead of at initialization:
-- You can handle `session_key` expiration gracefully
-- Different users can use the same client instance with their own `session_key`
-- You can rotate `session_key` without recreating the client
+通过在每次 API 调用时传入 `session_key` 而不是在初始化时传入：
+- 你可以优雅地处理 `session_key` 过期
+- 不同用户可以使用同一个客户端实例，各自使用自己的 `session_key`
+- 你可以轮换 `session_key` 而无需重新创建客户端
 
-## API Coverage
+## API 覆盖
 
-- [x] User Token Management (query_user_balance, currency_pay, cancel_currency_pay, present_currency)
-- [x] Order Management (query_order)
-- [x] Refund (refund_order)
-- [x] Withdrawal (create_withdraw_order, query_withdraw_order)
-- [x] Business Balance (query_biz_balance)
-- [x] Advertising Funds (query_transfer_account, query_adver_funds)
-- [x] Complaint Management (get_complaint_list, get_complaint_detail, response_complaint, complete_complaint)
-- [x] File Upload (upload_vp_file)
-- [x] Webhook Parser (goods delivery, coin payment, refund, complaint notifications)
+- [x] 用户代币管理 (query_user_balance, currency_pay, cancel_currency_pay, present_currency)
+- [x] 订单管理 (query_order)
+- [x] 退款 (refund_order)
+- [x] 提现 (create_withdraw_order, query_withdraw_order)
+- [x] 商家余额 (query_biz_balance)
+- [x] 广告金 (query_transfer_account, query_adver_funds)
+- [x] 投诉管理 (get_complaint_list, get_complaint_detail, response_complaint, complete_complaint)
+- [x] 文件上传 (upload_vp_file)
+- [x] Webhook 解析 (发货通知、代币支付通知、退款通知、投诉通知)
 
-## Usage Examples
+## 使用示例
 
-### Synchronous Usage
+### 同步使用
 
 ```python
 from wechat_xpay import XPayClient
 
 with XPayClient(
     app_id="wx1234567890",
-    app_key="your_app_key",
+    app_key="你的_app_key",
     env=0,
 ) as client:
-    # Query user balance
+    # 查询用户余额
     balance = client.query_user_balance(
-        openid="user_openid",
-        session_key="user_session_key",
+        openid="用户_openid",
+        session_key="用户_session_key",
     )
-    print(f"Balance: {balance.balance}")
-    print(f"Present: {balance.present_balance}")
+    print(f"余额: {balance.balance}")
+    print(f"赠送余额: {balance.present_balance}")
 
-    # Process payment
+    # 处理支付
     result = client.currency_pay(
-        openid="user_openid",
-        session_key="user_session_key",
-        out_trade_no="ORDER_123",
-        order_fee=100,  # Amount in cents
-        pay_item="Item description",
+        openid="用户_openid",
+        session_key="用户_session_key",
+        out_trade_no="订单_123",
+        order_fee=100,  # 金额，单位：分
+        pay_item="商品描述",
     )
-    print(f"Order ID: {result.order_id}")
+    print(f"订单 ID: {result.order_id}")
 
-    # Refund order
+    # 退款
     result = client.refund_order(
-        openid="user_openid",
-        session_key="user_session_key",
-        refund_order_id="REFUND_123",
+        openid="用户_openid",
+        session_key="用户_session_key",
+        refund_order_id="退款_123",
         left_fee=1000,
         refund_fee=500,
-        refund_reason="1",  # Product issue
-        req_from="1",  # Manual
-        order_id="original_order_id",
+        refund_reason="1",  # 商品问题
+        req_from="1",  # 人工
+        order_id="原订单_id",
     )
-    print(f"Refund Order ID: {result.refund_order_id}")
+    print(f"退款订单 ID: {result.refund_order_id}")
 ```
 
-### Asynchronous Usage
+### 异步使用
 
 ```python
 import asyncio
@@ -136,57 +135,57 @@ from wechat_xpay import XPayAsyncClient
 async def main():
     async with XPayAsyncClient(
         app_id="wx1234567890",
-        app_key="your_app_key",
+        app_key="你的_app_key",
         env=0,
     ) as client:
-        # Query user balance
+        # 查询用户余额
         balance = await client.query_user_balance(
-            openid="user_openid",
-            session_key="user_session_key",
+            openid="用户_openid",
+            session_key="用户_session_key",
         )
-        print(f"Balance: {balance.balance}")
+        print(f"余额: {balance.balance}")
 
-        # Concurrent payments with different session_keys
+        # 并发处理多个支付（使用不同的 session_key）
         tasks = [
             client.currency_pay(
-                openid=f"user_{i}",
-                session_key=f"session_key_{i}",  # Each user has their own session_key
-                out_trade_no=f"ORDER_{i}",
+                openid=f"用户_{i}",
+                session_key=f"session_key_{i}",  # 每个用户有自己的 session_key
+                out_trade_no=f"订单_{i}",
                 order_fee=100,
-                pay_item=f"Item {i}",
+                pay_item=f"商品_{i}",
             )
             for i in range(3)
         ]
         results = await asyncio.gather(*tasks)
         for result in results:
-            print(f"Order ID: {result.order_id}")
+            print(f"订单 ID: {result.order_id}")
 
 asyncio.run(main())
 ```
 
-### Handle Webhook
+### 处理 Webhook
 
 ```python
 from wechat_xpay.webhook import WebhookParser
 
 parser = WebhookParser()
 
-# Parse JSON payload
+# 解析 JSON 负载
 notification = parser.parse({
     "Event": "xpay_goods_deliver_notify",
-    "OpenId": "user_openid",
-    "OutTradeNo": "order_123",
-    # ... other fields
+    "OpenId": "用户_openid",
+    "OutTradeNo": "订单_123",
+    # ... 其他字段
 })
 
-print(f"Event: {notification.event}")
-print(f"OpenID: {notification.open_id}")
+print(f"事件类型: {notification.event}")
+print(f"用户 OpenID: {notification.open_id}")
 
-# Return success response to WeChat
+# 返回成功响应给微信
 response = parser.success_response()
 ```
 
-## Error Handling
+## 错误处理
 
 ```python
 from wechat_xpay import XPayClient
@@ -196,27 +195,27 @@ client = XPayClient(...)
 
 try:
     balance = client.query_user_balance(
-        openid="user_openid",
-        session_key="user_session_key",
+        openid="用户_openid",
+        session_key="用户_session_key",
     )
 except XPayAPIError as e:
     if e.errcode == ERR_SESSION_KEY_EXPIRED:
-        print("Session expired, please re-login")
-        # Re-authorize user to get new session_key
+        print("会话已过期，请重新登录")
+        # 重新授权用户获取新的 session_key
     else:
-        print(f"API Error: {e.errcode} - {e.errmsg}")
+        print(f"API 错误: {e.errcode} - {e.errmsg}")
 ```
 
-## Client Lifecycle Management
+## 客户端生命周期管理
 
-### Synchronous Client
+### 同步客户端
 
 ```python
-# Option 1: Context manager (auto close)
+# 方式 1：上下文管理器（自动关闭）
 with XPayClient(...) as client:
     result = client.query_user_balance(...)
 
-# Option 2: Manual close
+# 方式 2：手动关闭
 client = XPayClient(...)
 try:
     result = client.query_user_balance(...)
@@ -224,14 +223,14 @@ finally:
     client.close()
 ```
 
-### Asynchronous Client
+### 异步客户端
 
 ```python
-# Option 1: Async context manager (auto close)
+# 方式 1：异步上下文管理器（自动关闭）
 async with XPayAsyncClient(...) as client:
     result = await client.query_user_balance(...)
 
-# Option 2: Manual close
+# 方式 2：手动关闭
 client = XPayAsyncClient(...)
 try:
     result = await client.query_user_balance(...)
@@ -239,21 +238,21 @@ finally:
     await client.close()
 ```
 
-## Authentication
+## 认证
 
-The SDK handles two types of signatures automatically:
-- **pay_sig**: Signed with AppKey for API authentication (configured at client initialization)
-- **signature**: Signed with user's session_key for user state verification (passed per API call)
+SDK 自动处理两种签名：
+- **pay_sig**: 使用 AppKey 签名，用于 API 认证（在客户端初始化时配置）
+- **signature**: 使用用户的 session_key 签名，用于用户态验证（每次 API 调用时传入）
 
-## Environment
+## 环境
 
-- `env=0`: Sandbox environment (for testing)
-- `env=1`: Production environment
+- `env=0`: 沙箱环境（用于测试）
+- `env=1`: 生产环境
 
-## Documentation
+## 文档
 
-See `docs/plans/` for implementation details and API specifications.
+查看 `docs/plans/` 目录了解实现细节和 API 规范。
 
-## License
+## 许可证
 
 MIT

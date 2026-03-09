@@ -345,7 +345,7 @@ class NegotiationHistory:
 
 
 # ---------------------------------------------------------------------------
-# upload_vp_file
+# upload_vp_file / get_upload_file_sign
 # ---------------------------------------------------------------------------
 
 @dataclass
@@ -353,11 +353,27 @@ class UploadFileResult:
     file_id: str
 
 
-# ---------------------------------------------------------------------------
-# get_upload_file_sign
-# ---------------------------------------------------------------------------
-
 @dataclass
 class UploadFileSign:
     sign: str
     cos_url: Optional[str] = None
+
+
+# ---------------------------------------------------------------------------
+# notify_provide_goods
+# ---------------------------------------------------------------------------
+
+@dataclass
+class NotifyProvideGoodsResult:
+    order_id: str
+    out_trade_no: str
+    provide_status: int
+
+
+# ---------------------------------------------------------------------------
+# download_adverfunds_order
+# ---------------------------------------------------------------------------
+
+@dataclass
+class AdverfundsOrderDownload:
+    url: str

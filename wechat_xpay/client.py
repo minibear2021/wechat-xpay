@@ -1,7 +1,7 @@
 """XPay 同步客户端。"""
 from __future__ import annotations
 
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 
 import httpx
 
@@ -561,3 +561,346 @@ class XPayClient(BaseClient):
             payload["img_url"] = img_url
         response = self._http_post("/xpay/upload_vp_file", payload, session_key)
         return models.UploadFileResult(**response)
+
+    # -------------------------------------------------------------------------
+    # 发货管理 API
+    # -------------------------------------------------------------------------
+
+    def notify_provide_goods(
+        self,
+        session_key: str,
+        order_id: str,
+        out_trade_no: str,
+        openid: str,
+        provide_type: int,
+        receive_type: Optional[int] = None,
+    ) -> models.NotifyProvideGoodsResult:
+        """发货完成通知。
+
+        Args:
+            session_key: 用户的 session_key，用于计算用户态签名
+            order_id: XPay 订单 ID
+            out_trade_no: 商户订单号
+            openid: 用户的 OpenID
+            provide_type: 发货类型，1-普通发币，2-微信侧托管发币
+            receive_type: 领取类型，1-用户主动领取（普通发货时必填）
+
+        Returns:
+            NotifyProvideGoodsResult，包含发货状态
+        """
+        payload: Dict[str, Any] = {
+            "order_id": order_id,
+            "out_trade_no": out_trade_no,
+            "openid": openid,
+            "provide_type": provide_type,
+        }
+        if receive_type is not None:
+            payload["receive_type"] = receive_type
+        response = self._http_post("/xpay/notify_provide_goods", payload, session_key)
+        return models.NotifyProvideGoodsResult(**response)
+
+    # -------------------------------------------------------------------------
+    # 道具管理 API
+    # -------------------------------------------------------------------------
+
+    def start_upload_goods(
+        self,
+        session_key: str,
+        goods: List[Dict[str, Any]],
+    ) -> models.GoodsUploadStatus:
+        """启动道具上传。
+
+        Args:
+            session_key: 用户的 session_key，用于计算用户态签名
+            goods: 道具列表，每个道具包含 id, name, price, remark, item_url
+
+        Returns:
+            GoodsUploadStatus，包含上传任务状态
+        """
+        payload: Dict[str, Any] = {"goods": goods}
+        response = self._http_post("/xpay/start_upload_goods", payload, session_key)
+        return models.GoodsUploadStatus(
+            status=response.get("status", 0),
+            upload_item=[
+                models.GoodsUploadItem(**item)
+                for item in response.get("upload_item", [])
+            ],
+        )
+
+    def query_upload_goods(
+        self,
+        session_key: str,
+    ) -> models.GoodsUploadStatus:
+        """查询道具上传状态。
+
+        Args:
+            session_key: 用户的 session_key，用于计算用户态签名
+
+        Returns:
+            GoodsUploadStatus，包含上传任务状态和每个道具的上传状态
+        """
+        payload: Dict[str, Any] = {}
+        response = self._http_post("/xpay/query_upload_goods", payload, session_key)
+        return models.GoodsUploadStatus(
+            status=response.get("status", 0),
+            upload_item=[
+                models.GoodsUploadItem(**item)
+                for item in response.get("upload_item", [])
+            ],
+        )
+
+    def start_publish_goods(
+        self,
+        session_key: str,
+        goods: List[Dict[str, Any]],
+    ) -> models.GoodsPublishStatus:
+        """启动道具发布。
+
+        Args:
+            session_key: 用户的 session_key，用于计算用户态签名
+            goods: 道具列表，每个道具包含 id
+
+        Returns:
+            GoodsPublishStatus，包含发布任务状态
+        """
+        payload: Dict[str, Any] = {"goods": goods}
+        response = self._http_post("/xpay/start_publish_goods", payload, session_key)
+        return models.GoodsPublishStatus(
+            status=response.get("status", 0),
+            publish_item=[
+                models.GoodsPublishItem(**item)
+                for item in response.get("publish_item", [])
+            ],
+        )
+
+    def query_publish_goods(
+        self,
+        session_key: str,
+    ) -> models.GoodsPublishStatus:
+        """查询道具发布状态。
+
+        Args:
+            session_key: 用户的 session_key，用于计算用户态签名
+
+        Returns:
+            GoodsPublishStatus，包含发布任务状态和每个道具的发布状态
+        """
+        payload: Dict[str, Any] = {}
+        response = self._http_post("/xpay/query_publish_goods", payload, session_key)
+        return models.GoodsPublishStatus(
+            status=response.get("status", 0),
+            publish_item=[
+                models.GoodsPublishItem(**item)
+                for item in response.get("publish_item", [])
+            ],
+        )
+
+    # -------------------------------------------------------------------------
+    # 广告金账单 API
+    # -------------------------------------------------------------------------
+
+    def create_funds_bill(
+        self,
+        session_key: str,
+        transfer_account_uid: int,
+        transfer_account_agency_id: int,
+        transfer_amount: int,
+        fund_id: str,
+        settle_begin: int,
+        settle_end: int,
+        request_id: Optional[str] = None,
+    ) -> models.FundsBillResult:
+        """创建广告金账单。
+
+        Args:
+            session_key: 用户的 session_key，用于计算用户态签名
+            transfer_account_uid: 转账账户 UID
+            transfer_account_agency_id: 转账账户代理 ID
+            transfer_amount: 转账金额（单位：分）
+            fund_id: 广告金发放记录 ID
+            settle_begin: 结算开始时间戳
+            settle_end: 结算结束时间戳
+            request_id: 请求 ID（幂等控制，可选）
+
+        Returns:
+            FundsBillResult，包含账单 ID
+        """
+        payload: Dict[str, Any] = {
+            "transfer_account_uid": transfer_account_uid,
+            "transfer_account_agency_id": transfer_account_agency_id,
+            "transfer_amount": transfer_amount,
+            "fund_id": fund_id,
+            "settle_begin": settle_begin,
+            "settle_end": settle_end,
+        }
+        if request_id:
+            payload["request_id"] = request_id
+        response = self._http_post("/xpay/create_funds_bill", payload, session_key)
+        return models.FundsBillResult(**response)
+
+    def bind_transfer_account(
+        self,
+        session_key: str,
+        transfer_account_uid: int,
+        transfer_account_agency_id: int,
+    ) -> bool:
+        """绑定转账账户。
+
+        Args:
+            session_key: 用户的 session_key，用于计算用户态签名
+            transfer_account_uid: 转账账户 UID
+            transfer_account_agency_id: 转账账户代理 ID
+
+        Returns:
+            成功返回 True
+        """
+        payload: Dict[str, Any] = {
+            "transfer_account_uid": transfer_account_uid,
+            "transfer_account_agency_id": transfer_account_agency_id,
+        }
+        self._http_post("/xpay/bind_transfer_accout", payload, session_key)
+        return True
+
+    def query_funds_bill(
+        self,
+        session_key: str,
+        page: int = 1,
+        page_size: int = 10,
+    ) -> models.FundsBillList:
+        """查询资金账单。
+
+        Args:
+            session_key: 用户的 session_key，用于计算用户态签名
+            page: 页码（>= 1）
+            page_size: 每页记录数
+
+        Returns:
+            FundsBillList，包含账单列表和分页信息
+        """
+        payload: Dict[str, Any] = {
+            "page": page,
+            "page_size": page_size,
+        }
+        response = self._http_post("/xpay/query_funds_bill", payload, session_key)
+        return models.FundsBillList(
+            total_page=response.get("total_page", 1),
+            bill_list=[
+                models.FundsBillItem(**item)
+                for item in response.get("bill_list", [])
+            ],
+        )
+
+    def query_recover_bill(
+        self,
+        session_key: str,
+        page: int = 1,
+        page_size: int = 10,
+    ) -> models.RecoverBillList:
+        """查询回收账单。
+
+        Args:
+            session_key: 用户的 session_key，用于计算用户态签名
+            page: 页码（>= 1）
+            page_size: 每页记录数
+
+        Returns:
+            RecoverBillList，包含回收账单列表和分页信息
+        """
+        payload: Dict[str, Any] = {
+            "page": page,
+            "page_size": page_size,
+        }
+        response = self._http_post("/xpay/query_recover_bill", payload, session_key)
+        return models.RecoverBillList(
+            total_page=response.get("total_page", 1),
+            bill_list=[
+                models.RecoverBillItem(**item)
+                for item in response.get("bill_list", [])
+            ],
+        )
+
+    def download_adverfunds_order(
+        self,
+        session_key: str,
+        begin_ds: int,
+        end_ds: int,
+    ) -> models.AdverfundsOrderDownload:
+        """下载广告金订单账单。
+
+        Args:
+            session_key: 用户的 session_key，用于计算用户态签名
+            begin_ds: 开始日期（如 20230801）
+            end_ds: 结束日期（如 20230810）
+
+        Returns:
+            AdverfundsOrderDownload，包含下载 URL
+        """
+        payload = {
+            "begin_ds": begin_ds,
+            "end_ds": end_ds,
+        }
+        response = self._http_post("/xpay/download_adverfunds_order", payload, session_key)
+        return models.AdverfundsOrderDownload(**response)
+
+    # -------------------------------------------------------------------------
+    # 协商历史 API
+    # -------------------------------------------------------------------------
+
+    def get_negotiation_history(
+        self,
+        session_key: str,
+        complaint_id: str,
+        offset: int = 0,
+        limit: int = 10,
+    ) -> models.NegotiationHistory:
+        """获取协商历史。
+
+        Args:
+            session_key: 用户的 session_key，用于计算用户态签名
+            complaint_id: 投诉 ID
+            offset: 分页偏移量（从 0 开始）
+            limit: 最大返回记录数
+
+        Returns:
+            NegotiationHistory，包含协商记录列表
+        """
+        payload: Dict[str, Any] = {
+            "complaint_id": complaint_id,
+            "offset": offset,
+            "limit": limit,
+        }
+        response = self._http_post("/xpay/get_negotiation_history", payload, session_key)
+        return models.NegotiationHistory(
+            total=response.get("total", 0),
+            history=[
+                models.NegotiationRecord(**record)
+                for record in response.get("history", [])
+            ],
+        )
+
+    # -------------------------------------------------------------------------
+    # 文件上传签名 API
+    # -------------------------------------------------------------------------
+
+    def get_upload_file_sign(
+        self,
+        session_key: str,
+        file_name: str,
+        file_type: str,
+    ) -> models.UploadFileSign:
+        """获取上传文件签名。
+
+        Args:
+            session_key: 用户的 session_key，用于计算用户态签名
+            file_name: 文件名称
+            file_type: 文件类型，如 "image/jpeg", "image/png"
+
+        Returns:
+            UploadFileSign，包含签名和上传 URL
+        """
+        payload: Dict[str, Any] = {
+            "file_name": file_name,
+            "file_type": file_type,
+        }
+        response = self._http_post("/xpay/get_upload_file_sign", payload, session_key)
+        return models.UploadFileSign(**response)

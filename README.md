@@ -76,11 +76,18 @@ asyncio.run(main())
 - [x] 订单管理 (query_order)
 - [x] 退款 (refund_order)
 - [x] 提现 (create_withdraw_order, query_withdraw_order)
+- [x] 发货通知 (notify_provide_goods)
 - [x] 商家余额 (query_biz_balance)
-- [x] 广告金 (query_transfer_account, query_adver_funds)
-- [x] 投诉管理 (get_complaint_list, get_complaint_detail, response_complaint, complete_complaint)
-- [x] 文件上传 (upload_vp_file)
+- [x] 广告金 (query_transfer_account, query_adver_funds, create_funds_bill)
+- [x] 广告金账单 (query_funds_bill, query_recover_bill, download_adverfunds_order)
+- [x] 转账账户绑定 (bind_transfer_account)
+- [x] 道具管理 (start_upload_goods, query_upload_goods, start_publish_goods, query_publish_goods)
+- [x] 投诉管理 (get_complaint_list, get_complaint_detail, response_complaint, complete_complaint, get_negotiation_history)
+- [x] 文件上传 (upload_vp_file, get_upload_file_sign)
+- [x] 账单下载 (download_bill, download_adverfunds_order)
 - [x] Webhook 解析 (发货通知、代币支付通知、退款通知、投诉通知)
+
+**共计 29 个 API 端点，已全部实现。**
 
 ## 使用示例
 

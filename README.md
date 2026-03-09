@@ -113,9 +113,9 @@ with XPayClient(
     result = client.currency_pay(
         openid="用户_openid",
         session_key="用户_session_key",
-        out_trade_no="订单_123",
-        order_fee=100,  # 金额，单位：分
-        pay_item="商品描述",
+        order_id="订单_123",
+        amount=100,  # 代币数量
+        payitem="商品描述",
     )
     print(f"订单 ID: {result.order_id}")
 
@@ -157,9 +157,9 @@ async def main():
             client.currency_pay(
                 openid=f"用户_{i}",
                 session_key=f"session_key_{i}",  # 每个用户有自己的 session_key
-                out_trade_no=f"订单_{i}",
-                order_fee=100,
-                pay_item=f"商品_{i}",
+                order_id=f"订单_{i}",
+                amount=100,
+                payitem=f"商品_{i}",
             )
             for i in range(3)
         ]

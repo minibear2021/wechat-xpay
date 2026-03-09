@@ -34,10 +34,6 @@ class TestNotifyProvideGoods:
         result = client.notify_provide_goods(
             session_key="session_key_456",
             order_id="order_123",
-            out_trade_no="OUT_001",
-            openid="user_123",
-            provide_type=1,
-            receive_type=1,
         )
 
         assert isinstance(result, models.NotifyProvideGoodsResult)
@@ -69,10 +65,7 @@ class TestNotifyProvideGoods:
 
         result = await client.notify_provide_goods(
             session_key="session_key_456",
-            order_id="order_123",
-            out_trade_no="OUT_001",
-            openid="user_123",
-            provide_type=2,
+            wx_order_id="wx_order_123",
         )
 
         assert isinstance(result, models.NotifyProvideGoodsResult)

@@ -115,17 +115,21 @@ class XPayAsyncClient(BaseClient):
         self,
         openid: str,
         session_key: str,
+        user_ip: Optional[str] = None,
     ) -> models.UserBalance:
         """查询用户代币余额。
 
         Args:
             openid: 用户的 OpenID
             session_key: 用户的 session_key，用于计算用户态签名
+            user_ip: 用户 IP，例如 1.1.1.1
 
         Returns:
             UserBalance 对象，包含余额详情
         """
-        payload = {"openid": openid}
+        payload: Dict[str, Any] = {"openid": openid}
+        if user_ip:
+            payload["user_ip"] = user_ip
         response = await self._http_post("/xpay/query_user_balance", payload, session_key)
         return models.UserBalance(**response)
 
@@ -133,31 +137,36 @@ class XPayAsyncClient(BaseClient):
         self,
         openid: str,
         session_key: str,
-        out_trade_no: str,
-        order_fee: int,
-        pay_item: str,
-        **kwargs: Any,
+        order_id: str,
+        amount: int,
+        payitem: str,
+        user_ip: Optional[str] = None,
+        remark: Optional[str] = None,
     ) -> models.CurrencyPayResult:
         """扣除代币进行支付。
 
         Args:
             openid: 用户的 OpenID
             session_key: 用户的 session_key，用于计算用户态签名
-            out_trade_no: 商户订单号
-            order_fee: 订单金额（单位：分）
-            pay_item: 商品名称/描述
-            **kwargs: 可选参数（attach, device_id 等）
+            order_id: 订单号
+            amount: 支付的代币数量
+            payitem: 物品信息，如 [{"productid":"物品id", "unit_price": 单价, "quantity": 数量}]
+            user_ip: 用户 IP，例如 1.1.1.1
+            remark: 备注
 
         Returns:
             CurrencyPayResult，包含订单 ID 和余额信息
         """
         payload: Dict[str, Any] = {
             "openid": openid,
-            "out_trade_no": out_trade_no,
-            "order_fee": order_fee,
-            "pay_item": pay_item,
+            "order_id": order_id,
+            "amount": amount,
+            "payitem": payitem,
         }
-        payload.update(kwargs)
+        if user_ip:
+            payload["user_ip"] = user_ip
+        if remark:
+            payload["remark"] = remark
         response = await self._http_post("/xpay/currency_pay", payload, session_key)
         return models.CurrencyPayResult(**response)
 
@@ -167,16 +176,18 @@ class XPayAsyncClient(BaseClient):
         session_key: str,
         pay_order_id: str,
         order_id: str,
-        order_fee: int,
+        amount: int,
+        user_ip: Optional[str] = None,
     ) -> models.CancelCurrencyPayResult:
         """取消代币支付（退款）。
 
         Args:
             openid: 用户的 OpenID
             session_key: 用户的 session_key，用于计算用户态签名
-            pay_order_id: 原支付订单 ID
-            order_id: 新的退款订单 ID
-            order_fee: 退款金额（单位：分）
+            pay_order_id: 代币支付时传的 order_id
+            order_id: 本次退款单的单号
+            amount: 退款金额
+            user_ip: 用户 IP，例如 1.1.1.1
 
         Returns:
             CancelCurrencyPayResult，包含退款订单 ID
@@ -185,8 +196,10 @@ class XPayAsyncClient(BaseClient):
             "openid": openid,
             "pay_order_id": pay_order_id,
             "order_id": order_id,
-            "order_fee": order_fee,
+            "amount": amount,
         }
+        if user_ip:
+            payload["user_ip"] = user_ip
         response = await self._http_post("/xpay/cancel_currency_pay", payload, session_key)
         return models.CancelCurrencyPayResult(**response)
 
@@ -195,7 +208,7 @@ class XPayAsyncClient(BaseClient):
         openid: str,
         session_key: str,
         order_id: str,
-        pay_present: int,
+        amount: int,
     ) -> models.PresentCurrencyResult:
         """赠送代币给用户。
 
@@ -203,7 +216,7 @@ class XPayAsyncClient(BaseClient):
             openid: 用户的 OpenID
             session_key: 用户的 session_key，用于计算用户态签名
             order_id: 赠送订单 ID
-            pay_present: 赠送金额
+            amount: 赠送金额
 
         Returns:
             PresentCurrencyResult，包含余额信息
@@ -211,7 +224,7 @@ class XPayAsyncClient(BaseClient):
         payload: Dict[str, Any] = {
             "openid": openid,
             "order_id": order_id,
-            "pay_present": pay_present,
+            "amount": amount,
         }
         response = await self._http_post("/xpay/present_currency", payload, session_key)
         return models.PresentCurrencyResult(**response)
@@ -224,25 +237,25 @@ class XPayAsyncClient(BaseClient):
         self,
         openid: str,
         session_key: str,
-        out_trade_no: Optional[str] = None,
         order_id: Optional[str] = None,
+        wx_order_id: Optional[str] = None,
     ) -> models.Order:
         """查询订单详情。
 
         Args:
             openid: 用户的 OpenID
             session_key: 用户的 session_key，用于计算用户态签名
-            out_trade_no: 商户订单号（如未提供 order_id 则必填）
-            order_id: XPay 订单 ID（如未提供 out_trade_no 则必填）
+            order_id: 创建的订单号（与 wx_order_id 二选一）
+            wx_order_id: 微信内部单号（与 order_id 二选一）
 
         Returns:
             Order 对象，包含完整订单详情
         """
         payload: Dict[str, Any] = {"openid": openid}
-        if out_trade_no:
-            payload["out_trade_no"] = out_trade_no
         if order_id:
             payload["order_id"] = order_id
+        if wx_order_id:
+            payload["wx_order_id"] = wx_order_id
         response = await self._http_post("/xpay/query_order", payload, session_key)
         return models.Order(**response)
 
@@ -255,8 +268,8 @@ class XPayAsyncClient(BaseClient):
         refund_fee: int,
         refund_reason: str,
         req_from: str,
-        out_trade_no: Optional[str] = None,
         order_id: Optional[str] = None,
+        wx_order_id: Optional[str] = None,
         biz_meta: Optional[str] = None,
     ) -> models.RefundOrderResult:
         """现金订单退款。
@@ -269,8 +282,8 @@ class XPayAsyncClient(BaseClient):
             refund_fee: 退款金额（0 < refund_fee <= left_fee）
             refund_reason: "0"-无, "1"-商品问题, "2"-服务, "3"-用户请求, "4"-价格, "5"-其他
             req_from: "1"-人工, "2"-用户发起, "3"-其他
-            out_trade_no: 原商户订单号
-            order_id: 原 XPay 订单 ID
+            order_id: 下单时的单号（与 wx_order_id 二选一）
+            wx_order_id: 支付单对应的微信侧单号（与 order_id 二选一）
             biz_meta: 自定义数据（0-1024 字符）
 
         Returns:
@@ -284,10 +297,10 @@ class XPayAsyncClient(BaseClient):
             "refund_reason": refund_reason,
             "req_from": req_from,
         }
-        if out_trade_no:
-            payload["out_trade_no"] = out_trade_no
         if order_id:
             payload["order_id"] = order_id
+        if wx_order_id:
+            payload["wx_order_id"] = wx_order_id
         if biz_meta:
             payload["biz_meta"] = biz_meta
         response = await self._http_post("/xpay/refund_order", payload, session_key)
@@ -569,33 +582,24 @@ class XPayAsyncClient(BaseClient):
     async def notify_provide_goods(
         self,
         session_key: str,
-        order_id: str,
-        out_trade_no: str,
-        openid: str,
-        provide_type: int,
-        receive_type: Optional[int] = None,
+        order_id: Optional[str] = None,
+        wx_order_id: Optional[str] = None,
     ) -> models.NotifyProvideGoodsResult:
         """发货完成通知。
 
         Args:
             session_key: 用户的 session_key，用于计算用户态签名
-            order_id: XPay 订单 ID
-            out_trade_no: 商户订单号
-            openid: 用户的 OpenID
-            provide_type: 发货类型，1-普通发币，2-微信侧托管发币
-            receive_type: 领取类型，1-用户主动领取（普通发货时必填）
+            order_id: 订单号（与 wx_order_id 二选一）
+            wx_order_id: 微信内部单号（与 order_id 二选一）
 
         Returns:
             NotifyProvideGoodsResult，包含发货状态
         """
-        payload: Dict[str, Any] = {
-            "order_id": order_id,
-            "out_trade_no": out_trade_no,
-            "openid": openid,
-            "provide_type": provide_type,
-        }
-        if receive_type is not None:
-            payload["receive_type"] = receive_type
+        payload: Dict[str, Any] = {}
+        if order_id:
+            payload["order_id"] = order_id
+        if wx_order_id:
+            payload["wx_order_id"] = wx_order_id
         response = await self._http_post("/xpay/notify_provide_goods", payload, session_key)
         return models.NotifyProvideGoodsResult(**response)
 

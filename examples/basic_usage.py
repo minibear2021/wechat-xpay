@@ -37,9 +37,9 @@ def sync_examples():
             result = client.currency_pay(
                 openid="user_openid",
                 session_key="user_session_key",
-                out_trade_no="ORDER_20240101_001",
-                order_fee=100,  # 金额，单位：分
-                pay_item="高级道具",
+                order_id="ORDER_20240101_001",
+                amount=100,  # 代币数量
+                payitem="高级道具",
             )
             print(f"订单 ID: {result.order_id}")
             print(f"剩余余额: {result.balance}")
@@ -108,9 +108,9 @@ async def async_examples():
             client.currency_pay(
                 openid=f"user_{i}",
                 session_key=f"session_key_{i}",  # 每个用户有自己的 session_key
-                out_trade_no=f"ORDER_20240101_00{i}",
-                order_fee=100,
-                pay_item=f"道具_{i}",
+                order_id=f"ORDER_20240101_00{i}",
+                amount=100,
+                payitem=f"道具_{i}",
             )
             for i in range(3)
         ]

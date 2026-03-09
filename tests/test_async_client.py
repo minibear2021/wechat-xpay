@@ -72,9 +72,9 @@ class TestXPayAsyncClient:
         result = await async_client.currency_pay(
             openid="user_123",
             session_key="session_key_456",
-            out_trade_no="ORDER_001",
-            order_fee=200,
-            pay_item="Test Item",
+            order_id="ORDER_001",
+            amount=200,
+            payitem="Test Item",
         )
 
         assert isinstance(result, models.CurrencyPayResult)

@@ -146,7 +146,7 @@ class TestOrderAPIs:
             session_key="test_session_key",
             pay_order_id="original_order_123",
             order_id="refund_order_123",
-            order_fee=100,
+            amount=100,
         )
 
         assert isinstance(result, models.CancelCurrencyPayResult)
@@ -173,7 +173,7 @@ class TestOrderAPIs:
             openid="user_123",
             session_key="test_session_key",
             order_id="present_order_123",
-            pay_present=200,
+            amount=200,
         )
 
         assert isinstance(result, models.PresentCurrencyResult)

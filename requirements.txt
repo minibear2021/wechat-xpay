@@ -1,2 +1,2 @@
 # Production dependencies
-requests>=2.25.0
+httpx>=0.24.0

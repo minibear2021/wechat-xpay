@@ -8,6 +8,7 @@ from wechat_xpay.auth import (
     generate_timestamp,
     verify_webhook_signature,
 )
+from wechat_xpay.async_client import XPayAsyncClient
 from wechat_xpay.client import XPayClient
 from wechat_xpay.exceptions import (
     ERR_ACCOUNT_FROZEN,
@@ -77,6 +78,7 @@ from wechat_xpay import models
 __all__ = [
     # Client
     "XPayClient",
+    "XPayAsyncClient",
     # Auth
     "calc_pay_sig",
     "calc_signature",

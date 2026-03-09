@@ -2,29 +2,58 @@
 
 Python SDK for WeChat XPay (Virtual Payment) server-side APIs.
 
+## Features
+
+- ✅ **Sync & Async** - Supports both synchronous and asynchronous operations
+- ✅ **Type Hints** - Full type annotation support
+- ✅ **HTTP/2** - Built on httpx with HTTP/2 support
+- ✅ **Webhook Parser** - Handle WeChat push notifications
+- ✅ **Error Handling** - Comprehensive exception hierarchy with error codes
+
 ## Installation
 
 ```bash
-pip install requests
+pip install wechat-xpay
 ```
 
 ## Quick Start
 
+### Synchronous Client
+
 ```python
 from wechat_xpay import XPayClient
 
-# Initialize client
-client = XPayClient(
+# Using context manager (recommended)
+with XPayClient(
     app_id="your_app_id",
     app_key="your_app_key",
     session_key="user_session_key",
     env=0,  # 0=sandbox, 1=production
-)
+) as client:
+    balance = client.query_user_balance(openid="user_openid")
+    print(f"Balance: {balance.balance}")
+    print(f"Present Balance: {balance.present_balance}")
+```
 
-# Query user balance
-balance = client.query_user_balance(openid="user_openid")
-print(f"Balance: {balance.balance}")
-print(f"Present Balance: {balance.present_balance}")
+### Asynchronous Client
+
+```python
+import asyncio
+from wechat_xpay import XPayAsyncClient
+
+async def main():
+    # Using async context manager (recommended)
+    async with XPayAsyncClient(
+        app_id="your_app_id",
+        app_key="your_app_key",
+        session_key="user_session_key",
+        env=0,
+    ) as client:
+        balance = await client.query_user_balance(openid="user_openid")
+        print(f"Balance: {balance.balance}")
+        print(f"Present Balance: {balance.present_balance}")
+
+asyncio.run(main())
 ```
 
 ## API Coverage
@@ -41,48 +70,76 @@ print(f"Present Balance: {balance.present_balance}")
 
 ## Usage Examples
 
-### Query User Balance
+### Synchronous Usage
 
 ```python
 from wechat_xpay import XPayClient
 
-client = XPayClient(
+with XPayClient(
     app_id="wx1234567890",
     app_key="your_app_key",
     session_key="user_session_key",
     env=0,
-)
+) as client:
+    # Query user balance
+    balance = client.query_user_balance(openid="user_openid")
+    print(f"Balance: {balance.balance}")
+    print(f"Present: {balance.present_balance}")
 
-balance = client.query_user_balance(openid="user_openid")
-print(f"Balance: {balance.balance}")
-print(f"Present: {balance.present_balance}")
+    # Process payment
+    result = client.currency_pay(
+        openid="user_openid",
+        out_trade_no="ORDER_123",
+        order_fee=100,  # Amount in cents
+        pay_item="Item description",
+    )
+    print(f"Order ID: {result.order_id}")
+
+    # Refund order
+    result = client.refund_order(
+        openid="user_openid",
+        refund_order_id="REFUND_123",
+        left_fee=1000,
+        refund_fee=500,
+        refund_reason="1",  # Product issue
+        req_from="1",  # Manual
+        order_id="original_order_id",
+    )
+    print(f"Refund Order ID: {result.refund_order_id}")
 ```
 
-### Process Payment
+### Asynchronous Usage
 
 ```python
-result = client.currency_pay(
-    openid="user_openid",
-    out_trade_no="ORDER_123",
-    order_fee=100,  # Amount in cents
-    pay_item="Item description",
-)
-print(f"Order ID: {result.order_id}")
-```
+import asyncio
+from wechat_xpay import XPayAsyncClient
 
-### Refund Order
+async def main():
+    async with XPayAsyncClient(
+        app_id="wx1234567890",
+        app_key="your_app_key",
+        session_key="user_session_key",
+        env=0,
+    ) as client:
+        # Query user balance
+        balance = await client.query_user_balance(openid="user_openid")
+        print(f"Balance: {balance.balance}")
 
-```python
-result = client.refund_order(
-    openid="user_openid",
-    refund_order_id="REFUND_123",
-    left_fee=1000,
-    refund_fee=500,
-    refund_reason="1",  # Product issue
-    req_from="1",  # Manual
-    order_id="original_order_id",
-)
-print(f"Refund Order ID: {result.refund_order_id}")
+        # Concurrent payments
+        tasks = [
+            client.currency_pay(
+                openid=f"user_{i}",
+                out_trade_no=f"ORDER_{i}",
+                order_fee=100,
+                pay_item=f"Item {i}",
+            )
+            for i in range(3)
+        ]
+        results = await asyncio.gather(*tasks)
+        for result in results:
+            print(f"Order ID: {result.order_id}")
+
+asyncio.run(main())
 ```
 
 ### Handle Webhook
@@ -102,6 +159,9 @@ notification = parser.parse({
 
 print(f"Event: {notification.event}")
 print(f"OpenID: {notification.open_id}")
+
+# Return success response to WeChat
+response = parser.success_response()
 ```
 
 ## Error Handling
@@ -119,6 +179,38 @@ except XPayAPIError as e:
         print("Session expired, please re-login")
     else:
         print(f"API Error: {e.errcode} - {e.errmsg}")
+```
+
+## Client Lifecycle Management
+
+### Synchronous Client
+
+```python
+# Option 1: Context manager (auto close)
+with XPayClient(...) as client:
+    result = client.query_user_balance(...)
+
+# Option 2: Manual close
+client = XPayClient(...)
+try:
+    result = client.query_user_balance(...)
+finally:
+    client.close()
+```
+
+### Asynchronous Client
+
+```python
+# Option 1: Async context manager (auto close)
+async with XPayAsyncClient(...) as client:
+    result = await client.query_user_balance(...)
+
+# Option 2: Manual close
+client = XPayAsyncClient(...)
+try:
+    result = await client.query_user_balance(...)
+finally:
+    await client.close()
 ```
 
 ## Authentication

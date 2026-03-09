@@ -1,4 +1,5 @@
 """Basic usage example for WeChat XPay SDK."""
+
 import asyncio
 
 from wechat_xpay import XPayClient, XPayAsyncClient

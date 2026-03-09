@@ -1,4 +1,5 @@
 """Dataclasses for WeChat XPay API response objects."""
+
 from __future__ import annotations
 
 from dataclasses import dataclass, field
@@ -8,6 +9,7 @@ from typing import List, Optional
 # ---------------------------------------------------------------------------
 # query_user_balance
 # ---------------------------------------------------------------------------
+
 
 @dataclass
 class UserBalance:
@@ -24,6 +26,7 @@ class UserBalance:
 # currency_pay
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class CurrencyPayResult:
     order_id: str
@@ -34,6 +37,7 @@ class CurrencyPayResult:
 # ---------------------------------------------------------------------------
 # query_order — nested Order object
 # ---------------------------------------------------------------------------
+
 
 @dataclass
 class Order:
@@ -66,6 +70,7 @@ class Order:
 # cancel_currency_pay
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class CancelCurrencyPayResult:
     order_id: str
@@ -74,6 +79,7 @@ class CancelCurrencyPayResult:
 # ---------------------------------------------------------------------------
 # present_currency
 # ---------------------------------------------------------------------------
+
 
 @dataclass
 class PresentCurrencyResult:
@@ -86,6 +92,7 @@ class PresentCurrencyResult:
 # download_bill / download_adverfunds_order
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class BillDownload:
     url: str
@@ -94,6 +101,7 @@ class BillDownload:
 # ---------------------------------------------------------------------------
 # refund_order
 # ---------------------------------------------------------------------------
+
 
 @dataclass
 class RefundOrderResult:
@@ -107,6 +115,7 @@ class RefundOrderResult:
 # create_withdraw_order
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class WithdrawOrderResult:
     withdraw_no: str
@@ -116,6 +125,7 @@ class WithdrawOrderResult:
 # ---------------------------------------------------------------------------
 # query_withdraw_order
 # ---------------------------------------------------------------------------
+
 
 @dataclass
 class WithdrawOrder:
@@ -131,6 +141,7 @@ class WithdrawOrder:
 # ---------------------------------------------------------------------------
 # start_upload_goods / query_upload_goods
 # ---------------------------------------------------------------------------
+
 
 @dataclass
 class GoodsUploadItem:
@@ -153,6 +164,7 @@ class GoodsUploadStatus:
 # start_publish_goods / query_publish_goods
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class GoodsPublishItem:
     id: str
@@ -170,6 +182,7 @@ class GoodsPublishStatus:
 # query_biz_balance
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class BizBalanceAvailable:
     amount: str
@@ -185,6 +198,7 @@ class BizBalance:
 # query_transfer_account
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class TransferAccount:
     transfer_account_name: str
@@ -199,6 +213,7 @@ class TransferAccount:
 # ---------------------------------------------------------------------------
 # query_adver_funds
 # ---------------------------------------------------------------------------
+
 
 @dataclass
 class AdverFund:
@@ -221,6 +236,7 @@ class AdverFundList:
 # create_funds_bill
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class FundsBillResult:
     bill_id: str
@@ -229,6 +245,7 @@ class FundsBillResult:
 # ---------------------------------------------------------------------------
 # query_funds_bill
 # ---------------------------------------------------------------------------
+
 
 @dataclass
 class FundsBillItem:
@@ -254,6 +271,7 @@ class FundsBillList:
 # query_recover_bill
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class RecoverBillItem:
     bill_id: str
@@ -275,6 +293,7 @@ class RecoverBillList:
 # ---------------------------------------------------------------------------
 # get_complaint_list / get_complaint_detail
 # ---------------------------------------------------------------------------
+
 
 @dataclass
 class ComplaintOrderInfo:
@@ -328,6 +347,7 @@ class ComplaintList:
 # get_negotiation_history
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class NegotiationRecord:
     log_id: str
@@ -348,6 +368,7 @@ class NegotiationHistory:
 # upload_vp_file / get_upload_file_sign
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class UploadFileResult:
     file_id: str
@@ -363,6 +384,7 @@ class UploadFileSign:
 # notify_provide_goods
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class NotifyProvideGoodsResult:
     order_id: str
@@ -373,6 +395,7 @@ class NotifyProvideGoodsResult:
 # ---------------------------------------------------------------------------
 # download_adverfunds_order
 # ---------------------------------------------------------------------------
+
 
 @dataclass
 class AdverfundsOrderDownload:

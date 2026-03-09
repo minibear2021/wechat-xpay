@@ -1,4 +1,5 @@
 """同步客户端测试。"""
+
 import pytest
 import respx
 from httpx import Response

@@ -1,4 +1,5 @@
 """Webhook message parser for WeChat XPay push notifications."""
+
 from __future__ import annotations
 
 from dataclasses import dataclass, field
@@ -10,6 +11,7 @@ import xml.etree.ElementTree as ET
 @dataclass
 class WechatPayInfo:
     """WeChat payment information in notifications."""
+
     mch_order_no: str = ""
     transaction_id: str = ""
     paid_time: int = 0
@@ -18,6 +20,7 @@ class WechatPayInfo:
 @dataclass
 class GoodsInfo:
     """Goods information in delivery notification."""
+
     product_id: str = ""
     quantity: int = 0
     orig_price: int = 0
@@ -28,6 +31,7 @@ class GoodsInfo:
 @dataclass
 class CoinInfo:
     """Coin/token information in payment notification."""
+
     quantity: int = 0
     orig_price: int = 0
     actual_price: int = 0
@@ -37,6 +41,7 @@ class CoinInfo:
 @dataclass
 class TeamInfo:
     """Group buying information in notifications."""
+
     activity_id: str = ""
     team_id: str = ""
     team_type: int = 0
@@ -46,6 +51,7 @@ class TeamInfo:
 @dataclass
 class GoodsDeliverNotify:
     """xpay_goods_deliver_notify message."""
+
     to_user_name: str = ""
     from_user_name: str = ""
     create_time: int = 0
@@ -62,6 +68,7 @@ class GoodsDeliverNotify:
 @dataclass
 class CoinPayNotify:
     """xpay_coin_pay_notify message."""
+
     to_user_name: str = ""
     from_user_name: str = ""
     create_time: int = 0
@@ -77,6 +84,7 @@ class CoinPayNotify:
 @dataclass
 class RefundNotify:
     """xpay_refund_notify message."""
+
     to_user_name: str = ""
     from_user_name: str = ""
     create_time: int = 0
@@ -100,6 +108,7 @@ class RefundNotify:
 @dataclass
 class ComplaintNotify:
     """xpay_complaint_notify message."""
+
     to_user_name: str = ""
     from_user_name: str = ""
     create_time: int = 0
@@ -116,7 +125,9 @@ class ComplaintNotify:
 class WebhookParser:
     """Parser for WeChat XPay webhook messages."""
 
-    def parse(self, payload: dict[str, Any] | str) -> GoodsDeliverNotify | CoinPayNotify | RefundNotify | ComplaintNotify:
+    def parse(
+        self, payload: dict[str, Any] | str
+    ) -> GoodsDeliverNotify | CoinPayNotify | RefundNotify | ComplaintNotify:
         """Parse webhook message.
 
         Args:

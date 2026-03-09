@@ -5,6 +5,7 @@ Two independent HMAC-SHA256 signatures:
   pay_sig   - keyed by appKey,     message = uri + '&' + post_body
   signature - keyed by session_key, message = post_body
 """
+
 import hmac
 import hashlib
 

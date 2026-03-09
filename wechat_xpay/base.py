@@ -1,4 +1,5 @@
 """XPay 客户端基础模块，包含共享逻辑。"""
+
 from __future__ import annotations
 
 import json
@@ -37,9 +38,7 @@ class BaseClient:
         self.app_id = app_id
         self.app_key = app_key
         self.env = env
-        self.base_url = base_url or (
-            self.PROD_BASE_URL if env == 1 else self.SANDBOX_BASE_URL
-        )
+        self.base_url = base_url or (self.PROD_BASE_URL if env == 1 else self.SANDBOX_BASE_URL)
 
     def _prepare_request(
         self,

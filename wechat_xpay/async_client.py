@@ -1,4 +1,5 @@
 """XPay 异步客户端。"""
+
 from __future__ import annotations
 
 from typing import Any, Dict, List, Optional
@@ -413,10 +414,7 @@ class XPayAsyncClient(BaseClient):
         """
         payload: Dict[str, Any] = {}
         response = await self._http_post("/xpay/query_transfer_account", payload, session_key)
-        return [
-            models.TransferAccount(**acct)
-            for acct in response.get("acct_list", [])
-        ]
+        return [models.TransferAccount(**acct) for acct in response.get("acct_list", [])]
 
     async def query_adver_funds(
         self,
@@ -442,8 +440,7 @@ class XPayAsyncClient(BaseClient):
         return models.AdverFundList(
             total_page=response.get("total_page", 1),
             adver_funds_list=[
-                models.AdverFund(**fund)
-                for fund in response.get("adver_funds_list", [])
+                models.AdverFund(**fund) for fund in response.get("adver_funds_list", [])
             ],
         )
 
@@ -480,10 +477,7 @@ class XPayAsyncClient(BaseClient):
         response = await self._http_post("/xpay/get_complaint_list", payload, session_key)
         return models.ComplaintList(
             total=response.get("total", 0),
-            complaints=[
-                models.Complaint(**c)
-                for c in response.get("complaints", [])
-            ],
+            complaints=[models.Complaint(**c) for c in response.get("complaints", [])],
         )
 
     async def get_complaint_detail(
@@ -626,8 +620,7 @@ class XPayAsyncClient(BaseClient):
         return models.GoodsUploadStatus(
             status=response.get("status", 0),
             upload_item=[
-                models.GoodsUploadItem(**item)
-                for item in response.get("upload_item", [])
+                models.GoodsUploadItem(**item) for item in response.get("upload_item", [])
             ],
         )
 
@@ -648,8 +641,7 @@ class XPayAsyncClient(BaseClient):
         return models.GoodsUploadStatus(
             status=response.get("status", 0),
             upload_item=[
-                models.GoodsUploadItem(**item)
-                for item in response.get("upload_item", [])
+                models.GoodsUploadItem(**item) for item in response.get("upload_item", [])
             ],
         )
 
@@ -672,8 +664,7 @@ class XPayAsyncClient(BaseClient):
         return models.GoodsPublishStatus(
             status=response.get("status", 0),
             publish_item=[
-                models.GoodsPublishItem(**item)
-                for item in response.get("publish_item", [])
+                models.GoodsPublishItem(**item) for item in response.get("publish_item", [])
             ],
         )
 
@@ -694,8 +685,7 @@ class XPayAsyncClient(BaseClient):
         return models.GoodsPublishStatus(
             status=response.get("status", 0),
             publish_item=[
-                models.GoodsPublishItem(**item)
-                for item in response.get("publish_item", [])
+                models.GoodsPublishItem(**item) for item in response.get("publish_item", [])
             ],
         )
 
@@ -788,10 +778,7 @@ class XPayAsyncClient(BaseClient):
         response = await self._http_post("/xpay/query_funds_bill", payload, session_key)
         return models.FundsBillList(
             total_page=response.get("total_page", 1),
-            bill_list=[
-                models.FundsBillItem(**item)
-                for item in response.get("bill_list", [])
-            ],
+            bill_list=[models.FundsBillItem(**item) for item in response.get("bill_list", [])],
         )
 
     async def query_recover_bill(
@@ -817,10 +804,7 @@ class XPayAsyncClient(BaseClient):
         response = await self._http_post("/xpay/query_recover_bill", payload, session_key)
         return models.RecoverBillList(
             total_page=response.get("total_page", 1),
-            bill_list=[
-                models.RecoverBillItem(**item)
-                for item in response.get("bill_list", [])
-            ],
+            bill_list=[models.RecoverBillItem(**item) for item in response.get("bill_list", [])],
         )
 
     async def download_adverfunds_order(
@@ -876,10 +860,7 @@ class XPayAsyncClient(BaseClient):
         response = await self._http_post("/xpay/get_negotiation_history", payload, session_key)
         return models.NegotiationHistory(
             total=response.get("total", 0),
-            history=[
-                models.NegotiationRecord(**record)
-                for record in response.get("history", [])
-            ],
+            history=[models.NegotiationRecord(**record) for record in response.get("history", [])],
         )
 
     # -------------------------------------------------------------------------

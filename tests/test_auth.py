@@ -1,4 +1,5 @@
 """Tests for authentication module."""
+
 import pytest
 
 from wechat_xpay.auth import calc_pay_sig, calc_signature

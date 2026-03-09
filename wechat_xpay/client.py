@@ -17,7 +17,6 @@ class XPayClient(BaseClient):
     Args:
         app_id: 小程序 AppID
         app_key: 用于计算 pay_sig 的 AppKey
-        session_key: 用于计算用户态签名的 session_key
         env: 环境，0 表示沙箱，1 表示生产环境
         base_url: 可选的自定义基础 URL
 
@@ -26,20 +25,24 @@ class XPayClient(BaseClient):
         with XPayClient(
             app_id="wx1234567890",
             app_key="your_app_key",
-            session_key="user_session_key",
             env=0,
         ) as client:
-            balance = client.query_user_balance(openid="user_openid")
+            balance = client.query_user_balance(
+                openid="user_openid",
+                session_key="user_session_key",
+            )
             print(f"余额: {balance.balance}")
 
         # 方式 2：手动管理生命周期
         client = XPayClient(
             app_id="wx1234567890",
             app_key="your_app_key",
-            session_key="user_session_key",
             env=0,
         )
-        balance = client.query_user_balance(openid="user_openid")
+        balance = client.query_user_balance(
+            openid="user_openid",
+            session_key="user_session_key",
+        )
         print(f"余额: {balance.balance}")
         client.close()
     """
@@ -48,23 +51,24 @@ class XPayClient(BaseClient):
         self,
         app_id: str,
         app_key: str,
-        session_key: str,
         env: int = 1,
         base_url: Optional[str] = None,
     ) -> None:
-        super().__init__(app_id, app_key, session_key, env, base_url)
+        super().__init__(app_id, app_key, env, base_url)
         self._client = httpx.Client()
 
     def _http_post(
         self,
         endpoint: str,
         payload: Dict[str, Any],
+        session_key: str,
     ) -> Dict[str, Any]:
         """发送同步 HTTP POST 请求。
 
         Args:
             endpoint: API 端点路径
             payload: 请求体数据
+            session_key: 用户的 session_key，用于计算用户态签名
 
         Returns:
             解析后的响应字典
@@ -73,7 +77,7 @@ class XPayClient(BaseClient):
             XPayAPIError: API 返回错误
             httpx.HTTPError: HTTP 请求错误
         """
-        url, body_bytes, headers = self._prepare_request(endpoint, payload)
+        url, body_bytes, headers = self._prepare_request(endpoint, payload, session_key)
         response = self._client.post(url, content=body_bytes, headers=headers)
         response.raise_for_status()
         return self._handle_response(response.json())
@@ -107,22 +111,28 @@ class XPayClient(BaseClient):
     # 用户代币管理 API
     # -------------------------------------------------------------------------
 
-    def query_user_balance(self, openid: str) -> models.UserBalance:
+    def query_user_balance(
+        self,
+        openid: str,
+        session_key: str,
+    ) -> models.UserBalance:
         """查询用户代币余额。
 
         Args:
             openid: 用户的 OpenID
+            session_key: 用户的 session_key，用于计算用户态签名
 
         Returns:
             UserBalance 对象，包含余额详情
         """
         payload = {"openid": openid}
-        response = self._http_post("/xpay/query_user_balance", payload)
+        response = self._http_post("/xpay/query_user_balance", payload, session_key)
         return models.UserBalance(**response)
 
     def currency_pay(
         self,
         openid: str,
+        session_key: str,
         out_trade_no: str,
         order_fee: int,
         pay_item: str,
@@ -132,6 +142,7 @@ class XPayClient(BaseClient):
 
         Args:
             openid: 用户的 OpenID
+            session_key: 用户的 session_key，用于计算用户态签名
             out_trade_no: 商户订单号
             order_fee: 订单金额（单位：分）
             pay_item: 商品名称/描述
@@ -147,12 +158,13 @@ class XPayClient(BaseClient):
             "pay_item": pay_item,
         }
         payload.update(kwargs)
-        response = self._http_post("/xpay/currency_pay", payload)
+        response = self._http_post("/xpay/currency_pay", payload, session_key)
         return models.CurrencyPayResult(**response)
 
     def cancel_currency_pay(
         self,
         openid: str,
+        session_key: str,
         pay_order_id: str,
         order_id: str,
         order_fee: int,
@@ -161,6 +173,7 @@ class XPayClient(BaseClient):
 
         Args:
             openid: 用户的 OpenID
+            session_key: 用户的 session_key，用于计算用户态签名
             pay_order_id: 原支付订单 ID
             order_id: 新的退款订单 ID
             order_fee: 退款金额（单位：分）
@@ -174,12 +187,13 @@ class XPayClient(BaseClient):
             "order_id": order_id,
             "order_fee": order_fee,
         }
-        response = self._http_post("/xpay/cancel_currency_pay", payload)
+        response = self._http_post("/xpay/cancel_currency_pay", payload, session_key)
         return models.CancelCurrencyPayResult(**response)
 
     def present_currency(
         self,
         openid: str,
+        session_key: str,
         order_id: str,
         pay_present: int,
     ) -> models.PresentCurrencyResult:
@@ -187,6 +201,7 @@ class XPayClient(BaseClient):
 
         Args:
             openid: 用户的 OpenID
+            session_key: 用户的 session_key，用于计算用户态签名
             order_id: 赠送订单 ID
             pay_present: 赠送金额
 
@@ -198,7 +213,7 @@ class XPayClient(BaseClient):
             "order_id": order_id,
             "pay_present": pay_present,
         }
-        response = self._http_post("/xpay/present_currency", payload)
+        response = self._http_post("/xpay/present_currency", payload, session_key)
         return models.PresentCurrencyResult(**response)
 
     # -------------------------------------------------------------------------
@@ -208,6 +223,7 @@ class XPayClient(BaseClient):
     def query_order(
         self,
         openid: str,
+        session_key: str,
         out_trade_no: Optional[str] = None,
         order_id: Optional[str] = None,
     ) -> models.Order:
@@ -215,6 +231,7 @@ class XPayClient(BaseClient):
 
         Args:
             openid: 用户的 OpenID
+            session_key: 用户的 session_key，用于计算用户态签名
             out_trade_no: 商户订单号（如未提供 order_id 则必填）
             order_id: XPay 订单 ID（如未提供 out_trade_no 则必填）
 
@@ -226,12 +243,13 @@ class XPayClient(BaseClient):
             payload["out_trade_no"] = out_trade_no
         if order_id:
             payload["order_id"] = order_id
-        response = self._http_post("/xpay/query_order", payload)
+        response = self._http_post("/xpay/query_order", payload, session_key)
         return models.Order(**response)
 
     def refund_order(
         self,
         openid: str,
+        session_key: str,
         refund_order_id: str,
         left_fee: int,
         refund_fee: int,
@@ -245,6 +263,7 @@ class XPayClient(BaseClient):
 
         Args:
             openid: 用户的 OpenID
+            session_key: 用户的 session_key，用于计算用户态签名
             refund_order_id: 退款订单 ID（8-32 位字符）
             left_fee: 当前可退金额
             refund_fee: 退款金额（0 < refund_fee <= left_fee）
@@ -271,7 +290,7 @@ class XPayClient(BaseClient):
             payload["order_id"] = order_id
         if biz_meta:
             payload["biz_meta"] = biz_meta
-        response = self._http_post("/xpay/refund_order", payload)
+        response = self._http_post("/xpay/refund_order", payload, session_key)
         return models.RefundOrderResult(**response)
 
     # -------------------------------------------------------------------------
@@ -280,12 +299,14 @@ class XPayClient(BaseClient):
 
     def create_withdraw_order(
         self,
+        session_key: str,
         withdraw_no: str,
         withdraw_amount: Optional[str] = None,
     ) -> models.WithdrawOrderResult:
         """创建提现订单。
 
         Args:
+            session_key: 用户的 session_key，用于计算用户态签名
             withdraw_no: 提现订单号（8-32 位字符）
             withdraw_amount: 提现金额（单位：元，如 "0.01"），省略表示全额提现
 
@@ -295,30 +316,37 @@ class XPayClient(BaseClient):
         payload: Dict[str, Any] = {"withdraw_no": withdraw_no}
         if withdraw_amount:
             payload["withdraw_amount"] = withdraw_amount
-        response = self._http_post("/xpay/create_withdraw_order", payload)
+        response = self._http_post("/xpay/create_withdraw_order", payload, session_key)
         return models.WithdrawOrderResult(**response)
 
-    def query_withdraw_order(self, withdraw_no: str) -> models.WithdrawOrder:
+    def query_withdraw_order(
+        self,
+        session_key: str,
+        withdraw_no: str,
+    ) -> models.WithdrawOrder:
         """查询提现订单。
 
         Args:
+            session_key: 用户的 session_key，用于计算用户态签名
             withdraw_no: 提现订单号
 
         Returns:
             WithdrawOrder，包含提现详情
         """
         payload = {"withdraw_no": withdraw_no}
-        response = self._http_post("/xpay/query_withdraw_order", payload)
+        response = self._http_post("/xpay/query_withdraw_order", payload, session_key)
         return models.WithdrawOrder(**response)
 
     def download_bill(
         self,
+        session_key: str,
         begin_ds: int,
         end_ds: int,
     ) -> models.BillDownload:
         """下载小程序账单。
 
         Args:
+            session_key: 用户的 session_key，用于计算用户态签名
             begin_ds: 开始日期（如 20230801）
             end_ds: 结束日期（如 20230810）
 
@@ -329,21 +357,27 @@ class XPayClient(BaseClient):
             "begin_ds": begin_ds,
             "end_ds": end_ds,
         }
-        response = self._http_post("/xpay/download_bill", payload)
+        response = self._http_post("/xpay/download_bill", payload, session_key)
         return models.BillDownload(**response)
 
     # -------------------------------------------------------------------------
     # 商家余额和广告金 API
     # -------------------------------------------------------------------------
 
-    def query_biz_balance(self) -> models.BizBalance:
+    def query_biz_balance(
+        self,
+        session_key: str,
+    ) -> models.BizBalance:
         """查询商家可提现余额。
+
+        Args:
+            session_key: 用户的 session_key，用于计算用户态签名
 
         Returns:
             BizBalance，包含可用余额详情
         """
         payload: Dict[str, Any] = {}
-        response = self._http_post("/xpay/query_biz_balance", payload)
+        response = self._http_post("/xpay/query_biz_balance", payload, session_key)
         balance_data = response.get("balance_available", {})
         return models.BizBalance(
             balance_available=models.BizBalanceAvailable(
@@ -352,14 +386,20 @@ class XPayClient(BaseClient):
             )
         )
 
-    def query_transfer_account(self) -> list:
+    def query_transfer_account(
+        self,
+        session_key: str,
+    ) -> list:
         """查询广告金充值账户。
+
+        Args:
+            session_key: 用户的 session_key，用于计算用户态签名
 
         Returns:
             TransferAccount 对象列表
         """
         payload: Dict[str, Any] = {}
-        response = self._http_post("/xpay/query_transfer_account", payload)
+        response = self._http_post("/xpay/query_transfer_account", payload, session_key)
         return [
             models.TransferAccount(**acct)
             for acct in response.get("acct_list", [])
@@ -367,12 +407,14 @@ class XPayClient(BaseClient):
 
     def query_adver_funds(
         self,
+        session_key: str,
         page: int = 1,
         page_size: int = 10,
     ) -> models.AdverFundList:
         """查询广告金发放记录。
 
         Args:
+            session_key: 用户的 session_key，用于计算用户态签名
             page: 页码（>= 1）
             page_size: 每页记录数
 
@@ -383,7 +425,7 @@ class XPayClient(BaseClient):
             "page": page,
             "page_size": page_size,
         }
-        response = self._http_post("/xpay/query_adver_funds", payload)
+        response = self._http_post("/xpay/query_adver_funds", payload, session_key)
         return models.AdverFundList(
             total_page=response.get("total_page", 1),
             adver_funds_list=[
@@ -398,6 +440,7 @@ class XPayClient(BaseClient):
 
     def get_complaint_list(
         self,
+        session_key: str,
         begin_date: str,
         end_date: str,
         offset: int = 0,
@@ -406,6 +449,7 @@ class XPayClient(BaseClient):
         """获取投诉列表。
 
         Args:
+            session_key: 用户的 session_key，用于计算用户态签名
             begin_date: 开始日期（yyyy-mm-dd）
             end_date: 结束日期（yyyy-mm-dd）
             offset: 分页偏移量（从 0 开始）
@@ -420,7 +464,7 @@ class XPayClient(BaseClient):
             "offset": offset,
             "limit": limit,
         }
-        response = self._http_post("/xpay/get_complaint_list", payload)
+        response = self._http_post("/xpay/get_complaint_list", payload, session_key)
         return models.ComplaintList(
             total=response.get("total", 0),
             complaints=[
@@ -429,21 +473,27 @@ class XPayClient(BaseClient):
             ],
         )
 
-    def get_complaint_detail(self, complaint_id: str) -> models.Complaint:
+    def get_complaint_detail(
+        self,
+        session_key: str,
+        complaint_id: str,
+    ) -> models.Complaint:
         """获取投诉详情。
 
         Args:
+            session_key: 用户的 session_key，用于计算用户态签名
             complaint_id: 投诉 ID
 
         Returns:
             Complaint，包含完整详情
         """
         payload = {"complaint_id": complaint_id}
-        response = self._http_post("/xpay/get_complaint_detail", payload)
+        response = self._http_post("/xpay/get_complaint_detail", payload, session_key)
         return models.Complaint(**response.get("complaint", {}))
 
     def response_complaint(
         self,
+        session_key: str,
         complaint_id: str,
         response_content: str,
         response_images: Optional[list] = None,
@@ -451,6 +501,7 @@ class XPayClient(BaseClient):
         """回复投诉。
 
         Args:
+            session_key: 用户的 session_key，用于计算用户态签名
             complaint_id: 投诉 ID
             response_content: 回复内容
             response_images: 图片文件 ID 列表（来自 upload_vp_file）
@@ -464,24 +515,30 @@ class XPayClient(BaseClient):
         }
         if response_images:
             payload["response_images"] = response_images
-        self._http_post("/xpay/response_complaint", payload)
+        self._http_post("/xpay/response_complaint", payload, session_key)
         return True
 
-    def complete_complaint(self, complaint_id: str) -> bool:
+    def complete_complaint(
+        self,
+        session_key: str,
+        complaint_id: str,
+    ) -> bool:
         """完成投诉处理。
 
         Args:
+            session_key: 用户的 session_key，用于计算用户态签名
             complaint_id: 投诉 ID
 
         Returns:
             成功返回 True
         """
         payload = {"complaint_id": complaint_id}
-        self._http_post("/xpay/complete_complaint", payload)
+        self._http_post("/xpay/complete_complaint", payload, session_key)
         return True
 
     def upload_vp_file(
         self,
+        session_key: str,
         file_name: str,
         base64_img: Optional[str] = None,
         img_url: Optional[str] = None,
@@ -489,6 +546,7 @@ class XPayClient(BaseClient):
         """上传媒体文件（图片、凭证等）。
 
         Args:
+            session_key: 用户的 session_key，用于计算用户态签名
             file_name: 文件名称
             base64_img: Base64 编码的图片（最大 1MB）
             img_url: 图片 URL（最大 2MB，推荐）
@@ -501,5 +559,5 @@ class XPayClient(BaseClient):
             payload["base64_img"] = base64_img
         if img_url:
             payload["img_url"] = img_url
-        response = self._http_post("/xpay/upload_vp_file", payload)
+        response = self._http_post("/xpay/upload_vp_file", payload, session_key)
         return models.UploadFileResult(**response)

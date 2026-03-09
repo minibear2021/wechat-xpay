@@ -16,9 +16,12 @@ class BaseClient:
     Args:
         app_id: 小程序 AppID
         app_key: 用于计算 pay_sig 的 AppKey
-        session_key: 用于计算用户态签名的 session_key
         env: 环境，0 表示沙箱，1 表示生产环境
         base_url: 可选的自定义基础 URL
+
+    Note:
+        session_key 不在初始化时传入，而是在每次调用 API 时传入，
+        因为微信的 session_key 有生命周期，会定期过期需要更新。
     """
 
     SANDBOX_BASE_URL = "https://api.xpay.weixin.qq.com"
@@ -28,13 +31,11 @@ class BaseClient:
         self,
         app_id: str,
         app_key: str,
-        session_key: str,
         env: int = 1,
         base_url: Optional[str] = None,
     ) -> None:
         self.app_id = app_id
         self.app_key = app_key
-        self.session_key = session_key
         self.env = env
         self.base_url = base_url or (
             self.PROD_BASE_URL if env == 1 else self.SANDBOX_BASE_URL
@@ -44,6 +45,7 @@ class BaseClient:
         self,
         endpoint: str,
         payload: Dict[str, Any],
+        session_key: str,
     ) -> tuple[str, bytes, Dict[str, str]]:
         """准备请求数据。
 
@@ -52,6 +54,7 @@ class BaseClient:
         Args:
             endpoint: API 端点路径（如 '/xpay/query_user_balance'）
             payload: 请求体数据
+            session_key: 用户的 session_key，用于计算用户态签名
 
         Returns:
             (完整 URL, 请求体字节, 请求头字典)
@@ -66,7 +69,7 @@ class BaseClient:
 
         # 计算签名
         pay_sig = calc_pay_sig(endpoint, body_str, self.app_key)
-        signature = calc_signature(body_str, self.session_key)
+        signature = calc_signature(body_str, session_key)
 
         # 构建 URL
         url = f"{self.base_url}{endpoint}?pay_sig={pay_sig}"

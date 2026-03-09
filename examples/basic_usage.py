@@ -14,14 +14,17 @@ def sync_examples():
     # 方式 1：上下文管理器（推荐）
     with XPayClient(
         app_id="wx1234567890",
-        app_key="your_app_key_here",
-        session_key="user_session_key_here",
+        app_key="your_app_key",
         env=0,  # 0=沙箱，1=生产环境
     ) as client:
         # 示例 1：查询用户余额
         print("\n=== 查询用户余额 ===")
         try:
-            balance = client.query_user_balance(openid="user_openid_here")
+            # 注意：session_key 在调用时传入，因为它会定期过期
+            balance = client.query_user_balance(
+                openid="user_openid",
+                session_key="user_session_key",
+            )
             print(f"余额: {balance.balance}")
             print(f"赠送余额: {balance.present_balance}")
             print(f"累计充值: {balance.sum_save}")
@@ -32,7 +35,8 @@ def sync_examples():
         print("\n=== 处理支付 ===")
         try:
             result = client.currency_pay(
-                openid="user_openid_here",
+                openid="user_openid",
+                session_key="user_session_key",
                 out_trade_no="ORDER_20240101_001",
                 order_fee=100,  # 金额，单位：分
                 pay_item="高级道具",
@@ -46,7 +50,8 @@ def sync_examples():
         print("\n=== 查询订单 ===")
         try:
             order = client.query_order(
-                openid="user_openid_here",
+                openid="user_openid",
+                session_key="user_session_key",
                 order_id="ORDER_20240101_001",
             )
             print(f"订单 ID: {order.order_id}")
@@ -59,12 +64,15 @@ def sync_examples():
     print("\n=== 手动管理生命周期 ===")
     client = XPayClient(
         app_id="wx1234567890",
-        app_key="your_app_key_here",
-        session_key="user_session_key_here",
+        app_key="your_app_key",
         env=0,
     )
     try:
-        balance = client.query_user_balance(openid="user_openid_here")
+        # 可以为不同用户使用不同的 session_key
+        balance = client.query_user_balance(
+            openid="user_openid",
+            session_key="current_session_key",
+        )
         print(f"余额: {balance.balance}")
     finally:
         client.close()
@@ -79,24 +87,27 @@ async def async_examples():
     # 方式 1：异步上下文管理器（推荐）
     async with XPayAsyncClient(
         app_id="wx1234567890",
-        app_key="your_app_key_here",
-        session_key="user_session_key_here",
+        app_key="your_app_key",
         env=0,
     ) as client:
         # 示例 1：查询用户余额
         print("\n=== 异步查询用户余额 ===")
         try:
-            balance = await client.query_user_balance(openid="user_openid_here")
+            balance = await client.query_user_balance(
+                openid="user_openid",
+                session_key="user_session_key",
+            )
             print(f"余额: {balance.balance}")
             print(f"赠送余额: {balance.present_balance}")
         except Exception as e:
             print(f"错误: {e}")
 
-        # 示例 2：并发处理多个支付
+        # 示例 2：并发处理多个支付（每个使用不同的 session_key）
         print("\n=== 并发处理多个支付 ===")
         tasks = [
             client.currency_pay(
                 openid=f"user_{i}",
+                session_key=f"session_key_{i}",  # 每个用户有自己的 session_key
                 out_trade_no=f"ORDER_20240101_00{i}",
                 order_fee=100,
                 pay_item=f"道具_{i}",
@@ -117,7 +128,8 @@ async def async_examples():
         print("\n=== 异步查询订单 ===")
         try:
             order = await client.query_order(
-                openid="user_openid_here",
+                openid="user_openid",
+                session_key="user_session_key",
                 order_id="ORDER_20240101_001",
             )
             print(f"订单 ID: {order.order_id}")
@@ -129,12 +141,14 @@ async def async_examples():
     print("\n=== 异步手动管理生命周期 ===")
     client = XPayAsyncClient(
         app_id="wx1234567890",
-        app_key="your_app_key_here",
-        session_key="user_session_key_here",
+        app_key="your_app_key",
         env=0,
     )
     try:
-        balance = await client.query_user_balance(openid="user_openid_here")
+        balance = await client.query_user_balance(
+            openid="user_openid",
+            session_key="current_session_key",
+        )
         print(f"余额: {balance.balance}")
     finally:
         await client.close()

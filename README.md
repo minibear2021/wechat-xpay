@@ -27,10 +27,13 @@ from wechat_xpay import XPayClient
 with XPayClient(
     app_id="your_app_id",
     app_key="your_app_key",
-    session_key="user_session_key",
     env=0,  # 0=sandbox, 1=production
 ) as client:
-    balance = client.query_user_balance(openid="user_openid")
+    # session_key is passed per API call because it expires periodically
+    balance = client.query_user_balance(
+        openid="user_openid",
+        session_key="user_session_key",
+    )
     print(f"Balance: {balance.balance}")
     print(f"Present Balance: {balance.present_balance}")
 ```
@@ -46,15 +49,27 @@ async def main():
     async with XPayAsyncClient(
         app_id="your_app_id",
         app_key="your_app_key",
-        session_key="user_session_key",
         env=0,
     ) as client:
-        balance = await client.query_user_balance(openid="user_openid")
+        balance = await client.query_user_balance(
+            openid="user_openid",
+            session_key="user_session_key",
+        )
         print(f"Balance: {balance.balance}")
         print(f"Present Balance: {balance.present_balance}")
 
 asyncio.run(main())
 ```
+
+## Why session_key is passed per API call?
+
+WeChat's `session_key` has a lifecycle and expires periodically (typically 30 days).
+When it expires, you need to re-authorize the user to get a new `session_key`.
+
+By passing `session_key` per API call instead of at initialization:
+- You can handle `session_key` expiration gracefully
+- Different users can use the same client instance with their own `session_key`
+- You can rotate `session_key` without recreating the client
 
 ## API Coverage
 
@@ -78,17 +93,20 @@ from wechat_xpay import XPayClient
 with XPayClient(
     app_id="wx1234567890",
     app_key="your_app_key",
-    session_key="user_session_key",
     env=0,
 ) as client:
     # Query user balance
-    balance = client.query_user_balance(openid="user_openid")
+    balance = client.query_user_balance(
+        openid="user_openid",
+        session_key="user_session_key",
+    )
     print(f"Balance: {balance.balance}")
     print(f"Present: {balance.present_balance}")
 
     # Process payment
     result = client.currency_pay(
         openid="user_openid",
+        session_key="user_session_key",
         out_trade_no="ORDER_123",
         order_fee=100,  # Amount in cents
         pay_item="Item description",
@@ -98,6 +116,7 @@ with XPayClient(
     # Refund order
     result = client.refund_order(
         openid="user_openid",
+        session_key="user_session_key",
         refund_order_id="REFUND_123",
         left_fee=1000,
         refund_fee=500,
@@ -118,17 +137,20 @@ async def main():
     async with XPayAsyncClient(
         app_id="wx1234567890",
         app_key="your_app_key",
-        session_key="user_session_key",
         env=0,
     ) as client:
         # Query user balance
-        balance = await client.query_user_balance(openid="user_openid")
+        balance = await client.query_user_balance(
+            openid="user_openid",
+            session_key="user_session_key",
+        )
         print(f"Balance: {balance.balance}")
 
-        # Concurrent payments
+        # Concurrent payments with different session_keys
         tasks = [
             client.currency_pay(
                 openid=f"user_{i}",
+                session_key=f"session_key_{i}",  # Each user has their own session_key
                 out_trade_no=f"ORDER_{i}",
                 order_fee=100,
                 pay_item=f"Item {i}",
@@ -173,10 +195,14 @@ from wechat_xpay.exceptions import XPayAPIError, ERR_SESSION_KEY_EXPIRED
 client = XPayClient(...)
 
 try:
-    balance = client.query_user_balance(openid="user_openid")
+    balance = client.query_user_balance(
+        openid="user_openid",
+        session_key="user_session_key",
+    )
 except XPayAPIError as e:
     if e.errcode == ERR_SESSION_KEY_EXPIRED:
         print("Session expired, please re-login")
+        # Re-authorize user to get new session_key
     else:
         print(f"API Error: {e.errcode} - {e.errmsg}")
 ```
@@ -216,8 +242,8 @@ finally:
 ## Authentication
 
 The SDK handles two types of signatures automatically:
-- **pay_sig**: Signed with AppKey for API authentication
-- **signature**: Signed with user's session_key for user state verification
+- **pay_sig**: Signed with AppKey for API authentication (configured at client initialization)
+- **signature**: Signed with user's session_key for user state verification (passed per API call)
 
 ## Environment
 

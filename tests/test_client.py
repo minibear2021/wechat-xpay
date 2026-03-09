@@ -17,7 +17,6 @@ class TestXPayClient:
         return XPayClient(
             app_id="wx1234567890",
             app_key="test_app_key",
-            session_key="test_session_key",
             env=0,  # Sandbox
         )
 
@@ -41,7 +40,10 @@ class TestXPayClient:
             )
         )
 
-        result = client.query_user_balance("test_openid")
+        result = client.query_user_balance(
+            openid="test_openid",
+            session_key="test_session_key",
+        )
 
         assert result.balance == 1000
         assert result.present_balance == 500
@@ -61,7 +63,10 @@ class TestXPayClient:
         )
 
         with pytest.raises(XPayAPIError) as exc_info:
-            client.query_user_balance("invalid_openid")
+            client.query_user_balance(
+                openid="invalid_openid",
+                session_key="test_session_key",
+            )
 
         assert exc_info.value.errcode == 268490001
         assert "Invalid openid" in exc_info.value.errmsg
@@ -71,7 +76,6 @@ class TestXPayClient:
         with XPayClient(
             app_id="wx123",
             app_key="test_key",
-            session_key="session_key",
             env=0,
         ) as client:
             assert client.app_id == "wx123"
@@ -87,7 +91,6 @@ class TestOrderAPIs:
         return XPayClient(
             app_id="wx1234567890",
             app_key="test_app_key",
-            session_key="test_session_key",
             env=0,
         )
 
@@ -113,7 +116,11 @@ class TestOrderAPIs:
             )
         )
 
-        result = client.query_order(openid="user_123", order_id="order_123")
+        result = client.query_order(
+            openid="user_123",
+            session_key="test_session_key",
+            order_id="order_123",
+        )
 
         assert isinstance(result, models.Order)
         assert result.order_id == "order_123"
@@ -136,6 +143,7 @@ class TestOrderAPIs:
 
         result = client.cancel_currency_pay(
             openid="user_123",
+            session_key="test_session_key",
             pay_order_id="original_order_123",
             order_id="refund_order_123",
             order_fee=100,
@@ -163,6 +171,7 @@ class TestOrderAPIs:
 
         result = client.present_currency(
             openid="user_123",
+            session_key="test_session_key",
             order_id="present_order_123",
             pay_present=200,
         )
@@ -182,7 +191,6 @@ class TestRefundAndWithdrawAPIs:
         return XPayClient(
             app_id="wx1234567890",
             app_key="test_app_key",
-            session_key="test_session_key",
             env=0,
         )
 
@@ -205,6 +213,7 @@ class TestRefundAndWithdrawAPIs:
 
         result = client.refund_order(
             openid="user_123",
+            session_key="test_session_key",
             refund_order_id="refund_123",
             left_fee=1000,
             refund_fee=500,
@@ -233,6 +242,7 @@ class TestRefundAndWithdrawAPIs:
         )
 
         result = client.create_withdraw_order(
+            session_key="test_session_key",
             withdraw_no="withdraw_123",
             withdraw_amount="100.00",
         )
@@ -258,7 +268,10 @@ class TestRefundAndWithdrawAPIs:
             )
         )
 
-        result = client.query_withdraw_order(withdraw_no="withdraw_123")
+        result = client.query_withdraw_order(
+            session_key="test_session_key",
+            withdraw_no="withdraw_123",
+        )
 
         assert isinstance(result, models.WithdrawOrder)
         assert result.status == 2
@@ -279,6 +292,7 @@ class TestRefundAndWithdrawAPIs:
         )
 
         result = client.download_bill(
+            session_key="test_session_key",
             begin_ds=20230801,
             end_ds=20230810,
         )
@@ -297,7 +311,6 @@ class TestAdvertisingFundAPIs:
         return XPayClient(
             app_id="wx1234567890",
             app_key="test_app_key",
-            session_key="test_session_key",
             env=0,
         )
 
@@ -318,7 +331,7 @@ class TestAdvertisingFundAPIs:
             )
         )
 
-        result = client.query_biz_balance()
+        result = client.query_biz_balance(session_key="test_session_key")
 
         assert isinstance(result, models.BizBalance)
         assert result.balance_available.amount == "1000.00"
@@ -347,7 +360,7 @@ class TestAdvertisingFundAPIs:
             )
         )
 
-        result = client.query_transfer_account()
+        result = client.query_transfer_account(session_key="test_session_key")
 
         assert isinstance(result, list)
         assert len(result) == 1
@@ -380,7 +393,11 @@ class TestAdvertisingFundAPIs:
             )
         )
 
-        result = client.query_adver_funds(page=1, page_size=10)
+        result = client.query_adver_funds(
+            session_key="test_session_key",
+            page=1,
+            page_size=10,
+        )
 
         assert isinstance(result, models.AdverFundList)
         assert result.total_page == 1
@@ -397,7 +414,6 @@ class TestComplaintAPIs:
         return XPayClient(
             app_id="wx1234567890",
             app_key="test_app_key",
-            session_key="test_session_key",
             env=0,
         )
 
@@ -425,6 +441,7 @@ class TestComplaintAPIs:
         )
 
         result = client.get_complaint_list(
+            session_key="test_session_key",
             begin_date="2023-01-01",
             end_date="2023-12-31",
             offset=0,
@@ -456,7 +473,10 @@ class TestComplaintAPIs:
             )
         )
 
-        result = client.get_complaint_detail(complaint_id="complaint_123")
+        result = client.get_complaint_detail(
+            session_key="test_session_key",
+            complaint_id="complaint_123",
+        )
 
         assert isinstance(result, models.Complaint)
         assert result.complaint_id == "complaint_123"
@@ -473,6 +493,7 @@ class TestComplaintAPIs:
         )
 
         result = client.response_complaint(
+            session_key="test_session_key",
             complaint_id="complaint_123",
             response_content="We will process this soon",
         )
@@ -490,7 +511,10 @@ class TestComplaintAPIs:
             )
         )
 
-        result = client.complete_complaint(complaint_id="complaint_123")
+        result = client.complete_complaint(
+            session_key="test_session_key",
+            complaint_id="complaint_123",
+        )
 
         assert result is True
         assert route.called
@@ -510,6 +534,7 @@ class TestComplaintAPIs:
         )
 
         result = client.upload_vp_file(
+            session_key="test_session_key",
             file_name="test.jpg",
             img_url="https://example.com/image.jpg",
         )

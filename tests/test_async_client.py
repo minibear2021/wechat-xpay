@@ -17,7 +17,6 @@ class TestXPayAsyncClient:
         client = XPayAsyncClient(
             app_id="wx123",
             app_key="test_key",
-            session_key="session_key",
             env=0,
         )
         yield client
@@ -43,7 +42,10 @@ class TestXPayAsyncClient:
             )
         )
 
-        result = await async_client.query_user_balance(openid="user_123")
+        result = await async_client.query_user_balance(
+            openid="user_123",
+            session_key="session_key_456",
+        )
 
         assert isinstance(result, models.UserBalance)
         assert result.balance == 1000
@@ -69,6 +71,7 @@ class TestXPayAsyncClient:
 
         result = await async_client.currency_pay(
             openid="user_123",
+            session_key="session_key_456",
             out_trade_no="ORDER_001",
             order_fee=200,
             pay_item="Test Item",
@@ -93,7 +96,10 @@ class TestXPayAsyncClient:
         )
 
         with pytest.raises(XPayAPIError) as exc_info:
-            await async_client.query_user_balance(openid="user_123")
+            await async_client.query_user_balance(
+                openid="user_123",
+                session_key="expired_session_key",
+            )
 
         assert exc_info.value.errcode == 268490009
         assert "session_key" in exc_info.value.errmsg
@@ -105,15 +111,17 @@ class TestXPayAsyncClient:
             return_value=Response(500, text="Internal Server Error")
         )
 
-        with pytest.raises(Exception):  # httpx.HTTPStatusError
-            await async_client.query_user_balance(openid="user_123")
+        with pytest.raises(Exception):
+            await async_client.query_user_balance(
+                openid="user_123",
+                session_key="session_key_456",
+            )
 
     async def test_context_manager(self):
         """测试异步上下文管理器。"""
         async with XPayAsyncClient(
             app_id="wx123",
             app_key="test_key",
-            session_key="session_key",
             env=0,
         ) as client:
             # 验证客户端已正确初始化
@@ -144,6 +152,7 @@ class TestXPayAsyncClient:
 
         result = await async_client.query_order(
             openid="user_123",
+            session_key="session_key_456",
             order_id="order_123",
         )
 
@@ -171,12 +180,13 @@ class TestXPayAsyncClient:
 
         result = await async_client.refund_order(
             openid="user_123",
+            session_key="session_key_456",
             refund_order_id="refund_123",
             left_fee=1000,
             refund_fee=500,
             refund_reason="1",
             req_from="1",
-            order_id="order_123",
+            order_id="original_order",
         )
 
         assert isinstance(result, models.RefundOrderResult)
@@ -200,7 +210,7 @@ class TestXPayAsyncClient:
             )
         )
 
-        result = await async_client.query_biz_balance()
+        result = await async_client.query_biz_balance(session_key="session_key_456")
 
         assert isinstance(result, models.BizBalance)
         assert result.balance_available.amount == "1000.00"
@@ -230,6 +240,7 @@ class TestXPayAsyncClient:
         )
 
         result = await async_client.get_complaint_list(
+            session_key="session_key_456",
             begin_date="2023-01-01",
             end_date="2023-12-31",
             offset=0,

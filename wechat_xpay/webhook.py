@@ -2,10 +2,9 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from typing import Any, Optional
-import json
 import xml.etree.ElementTree as ET
+from dataclasses import dataclass
+from typing import Any
 
 
 @dataclass
@@ -60,9 +59,9 @@ class GoodsDeliverNotify:
     open_id: str = ""
     out_trade_no: str = ""
     env: int = 0
-    wechat_pay_info: Optional[WechatPayInfo] = None
-    goods_info: Optional[GoodsInfo] = None
-    team_info: Optional[TeamInfo] = None
+    wechat_pay_info: WechatPayInfo | None = None
+    goods_info: GoodsInfo | None = None
+    team_info: TeamInfo | None = None
 
 
 @dataclass
@@ -77,8 +76,8 @@ class CoinPayNotify:
     open_id: str = ""
     out_trade_no: str = ""
     env: int = 0
-    wechat_pay_info: Optional[WechatPayInfo] = None
-    coin_info: Optional[CoinInfo] = None
+    wechat_pay_info: WechatPayInfo | None = None
+    coin_info: CoinInfo | None = None
 
 
 @dataclass
@@ -102,7 +101,7 @@ class RefundNotify:
     refund_succ_timestamp: int = 0
     wxpay_refund_transaction_id: str = ""
     retry_times: int = 0
-    team_info: Optional[TeamInfo] = None
+    team_info: TeamInfo | None = None
 
 
 @dataclass
@@ -139,10 +138,7 @@ class WebhookParser:
         Raises:
             ValueError: If payload format is invalid
         """
-        if isinstance(payload, str):
-            data = self._parse_xml(payload)
-        else:
-            data = payload
+        data = self._parse_xml(payload) if isinstance(payload, str) else payload
 
         event = data.get("Event")
         if event == "xpay_goods_deliver_notify":

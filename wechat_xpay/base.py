@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import json
-from typing import Any, Dict, Optional
+from typing import Any
 
 from wechat_xpay.auth import calc_pay_sig, calc_signature
 from wechat_xpay.exceptions import XPayAPIError
@@ -33,7 +33,7 @@ class BaseClient:
         app_id: str,
         app_key: str,
         env: int = 1,
-        base_url: Optional[str] = None,
+        base_url: str | None = None,
     ) -> None:
         self.app_id = app_id
         self.app_key = app_key
@@ -43,9 +43,9 @@ class BaseClient:
     def _prepare_request(
         self,
         endpoint: str,
-        payload: Dict[str, Any],
+        payload: dict[str, Any],
         session_key: str,
-    ) -> tuple[str, bytes, Dict[str, str]]:
+    ) -> tuple[str, bytes, dict[str, str]]:
         """准备请求数据。
 
         添加公共字段、序列化请求体、计算签名、构建完整 URL。
@@ -82,7 +82,7 @@ class BaseClient:
 
         return url, body_bytes, headers
 
-    def _handle_response(self, data: Dict[str, Any]) -> Dict[str, Any]:
+    def _handle_response(self, data: dict[str, Any]) -> dict[str, Any]:
         """处理响应数据。
 
         检查 API 错误码，返回业务数据。

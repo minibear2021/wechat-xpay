@@ -1,11 +1,9 @@
 """测试新增的 API 实现。"""
 
-import pytest
 import respx
 from httpx import Response
 
-from wechat_xpay import XPayClient, XPayAsyncClient
-from wechat_xpay import models
+from wechat_xpay import XPayAsyncClient, XPayClient, models
 
 
 class TestNotifyProvideGoods:

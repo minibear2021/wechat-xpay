@@ -2,12 +2,12 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import httpx
 
-from wechat_xpay.base import BaseClient
 from wechat_xpay import models
+from wechat_xpay.base import BaseClient
 
 
 class XPayClient(BaseClient):
@@ -53,7 +53,7 @@ class XPayClient(BaseClient):
         app_id: str,
         app_key: str,
         env: int = 1,
-        base_url: Optional[str] = None,
+        base_url: str | None = None,
     ) -> None:
         super().__init__(app_id, app_key, env, base_url)
         self._client = httpx.Client()
@@ -61,9 +61,9 @@ class XPayClient(BaseClient):
     def _http_post(
         self,
         endpoint: str,
-        payload: Dict[str, Any],
+        payload: dict[str, Any],
         session_key: str,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """发送同步 HTTP POST 请求。
 
         Args:
@@ -90,7 +90,7 @@ class XPayClient(BaseClient):
         """
         self._client.close()
 
-    def __enter__(self) -> "XPayClient":
+    def __enter__(self) -> XPayClient:
         """上下文管理器入口。
 
         Returns:
@@ -116,7 +116,7 @@ class XPayClient(BaseClient):
         self,
         openid: str,
         session_key: str,
-        user_ip: Optional[str] = None,
+        user_ip: str | None = None,
     ) -> models.UserBalance:
         """查询用户代币余额。
 
@@ -128,7 +128,7 @@ class XPayClient(BaseClient):
         Returns:
             UserBalance 对象，包含余额详情
         """
-        payload: Dict[str, Any] = {"openid": openid}
+        payload: dict[str, Any] = {"openid": openid}
         if user_ip:
             payload["user_ip"] = user_ip
         response = self._http_post("/xpay/query_user_balance", payload, session_key)
@@ -141,8 +141,8 @@ class XPayClient(BaseClient):
         order_id: str,
         amount: int,
         payitem: str,
-        user_ip: Optional[str] = None,
-        remark: Optional[str] = None,
+        user_ip: str | None = None,
+        remark: str | None = None,
     ) -> models.CurrencyPayResult:
         """扣除代币进行支付。
 
@@ -158,7 +158,7 @@ class XPayClient(BaseClient):
         Returns:
             CurrencyPayResult，包含订单 ID 和余额信息
         """
-        payload: Dict[str, Any] = {
+        payload: dict[str, Any] = {
             "openid": openid,
             "order_id": order_id,
             "amount": amount,
@@ -178,7 +178,7 @@ class XPayClient(BaseClient):
         pay_order_id: str,
         order_id: str,
         amount: int,
-        user_ip: Optional[str] = None,
+        user_ip: str | None = None,
     ) -> models.CancelCurrencyPayResult:
         """取消代币支付（退款）。
 
@@ -193,7 +193,7 @@ class XPayClient(BaseClient):
         Returns:
             CancelCurrencyPayResult，包含退款订单 ID
         """
-        payload: Dict[str, Any] = {
+        payload: dict[str, Any] = {
             "openid": openid,
             "pay_order_id": pay_order_id,
             "order_id": order_id,
@@ -222,7 +222,7 @@ class XPayClient(BaseClient):
         Returns:
             PresentCurrencyResult，包含余额信息
         """
-        payload: Dict[str, Any] = {
+        payload: dict[str, Any] = {
             "openid": openid,
             "order_id": order_id,
             "amount": amount,
@@ -238,8 +238,8 @@ class XPayClient(BaseClient):
         self,
         openid: str,
         session_key: str,
-        order_id: Optional[str] = None,
-        wx_order_id: Optional[str] = None,
+        order_id: str | None = None,
+        wx_order_id: str | None = None,
     ) -> models.Order:
         """查询订单详情。
 
@@ -252,7 +252,7 @@ class XPayClient(BaseClient):
         Returns:
             Order 对象，包含完整订单详情
         """
-        payload: Dict[str, Any] = {"openid": openid}
+        payload: dict[str, Any] = {"openid": openid}
         if order_id:
             payload["order_id"] = order_id
         if wx_order_id:
@@ -269,9 +269,9 @@ class XPayClient(BaseClient):
         refund_fee: int,
         refund_reason: str,
         req_from: str,
-        order_id: Optional[str] = None,
-        wx_order_id: Optional[str] = None,
-        biz_meta: Optional[str] = None,
+        order_id: str | None = None,
+        wx_order_id: str | None = None,
+        biz_meta: str | None = None,
     ) -> models.RefundOrderResult:
         """现金订单退款。
 
@@ -290,7 +290,7 @@ class XPayClient(BaseClient):
         Returns:
             RefundOrderResult，包含退款详情
         """
-        payload: Dict[str, Any] = {
+        payload: dict[str, Any] = {
             "openid": openid,
             "refund_order_id": refund_order_id,
             "left_fee": left_fee,
@@ -315,7 +315,7 @@ class XPayClient(BaseClient):
         self,
         session_key: str,
         withdraw_no: str,
-        withdraw_amount: Optional[str] = None,
+        withdraw_amount: str | None = None,
     ) -> models.WithdrawOrderResult:
         """创建提现订单。
 
@@ -327,7 +327,7 @@ class XPayClient(BaseClient):
         Returns:
             WithdrawOrderResult，包含提现订单详情
         """
-        payload: Dict[str, Any] = {"withdraw_no": withdraw_no}
+        payload: dict[str, Any] = {"withdraw_no": withdraw_no}
         if withdraw_amount:
             payload["withdraw_amount"] = withdraw_amount
         response = self._http_post("/xpay/create_withdraw_order", payload, session_key)
@@ -390,7 +390,7 @@ class XPayClient(BaseClient):
         Returns:
             BizBalance，包含可用余额详情
         """
-        payload: Dict[str, Any] = {}
+        payload: dict[str, Any] = {}
         response = self._http_post("/xpay/query_biz_balance", payload, session_key)
         balance_data = response.get("balance_available", {})
         return models.BizBalance(
@@ -412,7 +412,7 @@ class XPayClient(BaseClient):
         Returns:
             TransferAccount 对象列表
         """
-        payload: Dict[str, Any] = {}
+        payload: dict[str, Any] = {}
         response = self._http_post("/xpay/query_transfer_account", payload, session_key)
         return [models.TransferAccount(**acct) for acct in response.get("acct_list", [])]
 
@@ -432,7 +432,7 @@ class XPayClient(BaseClient):
         Returns:
             AdverFundList，包含发放记录和分页信息
         """
-        payload: Dict[str, Any] = {
+        payload: dict[str, Any] = {
             "page": page,
             "page_size": page_size,
         }
@@ -468,7 +468,7 @@ class XPayClient(BaseClient):
         Returns:
             ComplaintList，包含投诉列表和总数
         """
-        payload: Dict[str, Any] = {
+        payload: dict[str, Any] = {
             "begin_date": begin_date,
             "end_date": end_date,
             "offset": offset,
@@ -503,7 +503,7 @@ class XPayClient(BaseClient):
         session_key: str,
         complaint_id: str,
         response_content: str,
-        response_images: Optional[list] = None,
+        response_images: list | None = None,
     ) -> bool:
         """回复投诉。
 
@@ -516,7 +516,7 @@ class XPayClient(BaseClient):
         Returns:
             成功返回 True
         """
-        payload: Dict[str, Any] = {
+        payload: dict[str, Any] = {
             "complaint_id": complaint_id,
             "response_content": response_content,
         }
@@ -547,8 +547,8 @@ class XPayClient(BaseClient):
         self,
         session_key: str,
         file_name: str,
-        base64_img: Optional[str] = None,
-        img_url: Optional[str] = None,
+        base64_img: str | None = None,
+        img_url: str | None = None,
     ) -> models.UploadFileResult:
         """上传媒体文件（图片、凭证等）。
 
@@ -561,7 +561,7 @@ class XPayClient(BaseClient):
         Returns:
             UploadFileResult，包含 file_id
         """
-        payload: Dict[str, Any] = {"file_name": file_name}
+        payload: dict[str, Any] = {"file_name": file_name}
         if base64_img:
             payload["base64_img"] = base64_img
         if img_url:
@@ -576,8 +576,8 @@ class XPayClient(BaseClient):
     def notify_provide_goods(
         self,
         session_key: str,
-        order_id: Optional[str] = None,
-        wx_order_id: Optional[str] = None,
+        order_id: str | None = None,
+        wx_order_id: str | None = None,
     ) -> models.NotifyProvideGoodsResult:
         """发货完成通知。
 
@@ -589,7 +589,7 @@ class XPayClient(BaseClient):
         Returns:
             NotifyProvideGoodsResult，包含发货状态
         """
-        payload: Dict[str, Any] = {}
+        payload: dict[str, Any] = {}
         if order_id:
             payload["order_id"] = order_id
         if wx_order_id:
@@ -604,7 +604,7 @@ class XPayClient(BaseClient):
     def start_upload_goods(
         self,
         session_key: str,
-        goods: List[Dict[str, Any]],
+        goods: list[dict[str, Any]],
     ) -> models.GoodsUploadStatus:
         """启动道具上传。
 
@@ -615,7 +615,7 @@ class XPayClient(BaseClient):
         Returns:
             GoodsUploadStatus，包含上传任务状态
         """
-        payload: Dict[str, Any] = {"goods": goods}
+        payload: dict[str, Any] = {"goods": goods}
         response = self._http_post("/xpay/start_upload_goods", payload, session_key)
         return models.GoodsUploadStatus(
             status=response.get("status", 0),
@@ -636,7 +636,7 @@ class XPayClient(BaseClient):
         Returns:
             GoodsUploadStatus，包含上传任务状态和每个道具的上传状态
         """
-        payload: Dict[str, Any] = {}
+        payload: dict[str, Any] = {}
         response = self._http_post("/xpay/query_upload_goods", payload, session_key)
         return models.GoodsUploadStatus(
             status=response.get("status", 0),
@@ -648,7 +648,7 @@ class XPayClient(BaseClient):
     def start_publish_goods(
         self,
         session_key: str,
-        goods: List[Dict[str, Any]],
+        goods: list[dict[str, Any]],
     ) -> models.GoodsPublishStatus:
         """启动道具发布。
 
@@ -659,7 +659,7 @@ class XPayClient(BaseClient):
         Returns:
             GoodsPublishStatus，包含发布任务状态
         """
-        payload: Dict[str, Any] = {"goods": goods}
+        payload: dict[str, Any] = {"goods": goods}
         response = self._http_post("/xpay/start_publish_goods", payload, session_key)
         return models.GoodsPublishStatus(
             status=response.get("status", 0),
@@ -680,7 +680,7 @@ class XPayClient(BaseClient):
         Returns:
             GoodsPublishStatus，包含发布任务状态和每个道具的发布状态
         """
-        payload: Dict[str, Any] = {}
+        payload: dict[str, Any] = {}
         response = self._http_post("/xpay/query_publish_goods", payload, session_key)
         return models.GoodsPublishStatus(
             status=response.get("status", 0),
@@ -702,7 +702,7 @@ class XPayClient(BaseClient):
         fund_id: str,
         settle_begin: int,
         settle_end: int,
-        request_id: Optional[str] = None,
+        request_id: str | None = None,
     ) -> models.FundsBillResult:
         """创建广告金账单。
 
@@ -719,7 +719,7 @@ class XPayClient(BaseClient):
         Returns:
             FundsBillResult，包含账单 ID
         """
-        payload: Dict[str, Any] = {
+        payload: dict[str, Any] = {
             "transfer_account_uid": transfer_account_uid,
             "transfer_account_agency_id": transfer_account_agency_id,
             "transfer_amount": transfer_amount,
@@ -748,7 +748,7 @@ class XPayClient(BaseClient):
         Returns:
             成功返回 True
         """
-        payload: Dict[str, Any] = {
+        payload: dict[str, Any] = {
             "transfer_account_uid": transfer_account_uid,
             "transfer_account_agency_id": transfer_account_agency_id,
         }
@@ -771,7 +771,7 @@ class XPayClient(BaseClient):
         Returns:
             FundsBillList，包含账单列表和分页信息
         """
-        payload: Dict[str, Any] = {
+        payload: dict[str, Any] = {
             "page": page,
             "page_size": page_size,
         }
@@ -797,7 +797,7 @@ class XPayClient(BaseClient):
         Returns:
             RecoverBillList，包含回收账单列表和分页信息
         """
-        payload: Dict[str, Any] = {
+        payload: dict[str, Any] = {
             "page": page,
             "page_size": page_size,
         }
@@ -852,7 +852,7 @@ class XPayClient(BaseClient):
         Returns:
             NegotiationHistory，包含协商记录列表
         """
-        payload: Dict[str, Any] = {
+        payload: dict[str, Any] = {
             "complaint_id": complaint_id,
             "offset": offset,
             "limit": limit,
@@ -883,7 +883,7 @@ class XPayClient(BaseClient):
         Returns:
             UploadFileSign，包含签名和上传 URL
         """
-        payload: Dict[str, Any] = {
+        payload: dict[str, Any] = {
             "file_name": file_name,
             "file_type": file_type,
         }

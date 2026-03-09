@@ -1,12 +1,13 @@
 """Tests for webhook message parser."""
 
 import pytest
+
 from wechat_xpay.webhook import (
-    WebhookParser,
-    GoodsDeliverNotify,
     CoinPayNotify,
-    RefundNotify,
     ComplaintNotify,
+    GoodsDeliverNotify,
+    RefundNotify,
+    WebhookParser,
 )
 
 

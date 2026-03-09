@@ -2,7 +2,7 @@
 
 import asyncio
 
-from wechat_xpay import XPayClient, XPayAsyncClient
+from wechat_xpay import XPayAsyncClient, XPayClient
 from wechat_xpay.webhook import WebhookParser
 
 

@@ -4,9 +4,8 @@ import pytest
 import respx
 from httpx import Response
 
-from wechat_xpay import XPayAsyncClient
+from wechat_xpay import XPayAsyncClient, models
 from wechat_xpay.exceptions import XPayAPIError
-from wechat_xpay import models
 
 
 class TestXPayAsyncClient:
@@ -112,7 +111,7 @@ class TestXPayAsyncClient:
             return_value=Response(500, text="Internal Server Error")
         )
 
-        with pytest.raises(Exception):
+        with pytest.raises((XPayAPIError, Exception)):
             await async_client.query_user_balance(
                 openid="user_123",
                 session_key="session_key_456",

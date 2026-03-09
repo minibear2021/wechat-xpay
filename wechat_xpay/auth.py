@@ -6,8 +6,8 @@ Two independent HMAC-SHA256 signatures:
   signature - keyed by session_key, message = post_body
 """
 
-import hmac
 import hashlib
+import hmac
 
 
 def calc_pay_sig(uri: str, post_body: str, app_key: str) -> str:

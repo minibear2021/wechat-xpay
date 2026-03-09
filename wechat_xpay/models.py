@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import List, Optional
 
 # ---------------------------------------------------------------------------
 # query_user_balance
@@ -49,20 +48,20 @@ class Order:
     paid_fee: int
     order_type: int
     env_type: int
-    coupon_fee: Optional[int] = None
-    refund_fee: Optional[int] = None
-    paid_time: Optional[int] = None
-    provide_time: Optional[int] = None
-    biz_meta: Optional[str] = None
-    token: Optional[str] = None
-    left_fee: Optional[int] = None
-    wx_order_id: Optional[str] = None
-    channel_order_id: Optional[str] = None
-    wxpay_order_id: Optional[str] = None
-    sett_time: Optional[int] = None
-    sett_state: Optional[int] = None
-    platform_fee_fen: Optional[int] = None
-    cps_fee_fen: Optional[int] = None
+    coupon_fee: int | None = None
+    refund_fee: int | None = None
+    paid_time: int | None = None
+    provide_time: int | None = None
+    biz_meta: str | None = None
+    token: str | None = None
+    left_fee: int | None = None
+    wx_order_id: str | None = None
+    channel_order_id: str | None = None
+    wxpay_order_id: str | None = None
+    sett_time: int | None = None
+    sett_state: int | None = None
+    platform_fee_fen: int | None = None
+    cps_fee_fen: int | None = None
 
 
 # ---------------------------------------------------------------------------
@@ -132,9 +131,9 @@ class WithdrawOrder:
     status: int
     withdraw_amount: str
     wx_withdraw_no: str
-    withdraw_success_timestamp: Optional[str] = None
-    create_time: Optional[str] = None
-    fail_reason: Optional[str] = None
+    withdraw_success_timestamp: str | None = None
+    create_time: str | None = None
+    fail_reason: str | None = None
 
 
 # ---------------------------------------------------------------------------
@@ -149,14 +148,14 @@ class GoodsUploadItem:
     price: int
     remark: str
     item_url: str
-    upload_status: Optional[int] = None
-    errmsg: Optional[str] = None
+    upload_status: int | None = None
+    errmsg: str | None = None
 
 
 @dataclass
 class GoodsUploadStatus:
     status: int
-    upload_item: List[GoodsUploadItem] = field(default_factory=list)
+    upload_item: list[GoodsUploadItem] = field(default_factory=list)
 
 
 # ---------------------------------------------------------------------------
@@ -167,14 +166,14 @@ class GoodsUploadStatus:
 @dataclass
 class GoodsPublishItem:
     id: str
-    publish_status: Optional[int] = None
-    errmsg: Optional[str] = None
+    publish_status: int | None = None
+    errmsg: str | None = None
 
 
 @dataclass
 class GoodsPublishStatus:
     status: int
-    publish_item: List[GoodsPublishItem] = field(default_factory=list)
+    publish_item: list[GoodsPublishItem] = field(default_factory=list)
 
 
 # ---------------------------------------------------------------------------
@@ -206,7 +205,7 @@ class TransferAccount:
     transfer_account_agency_name: str
     state: int
     bind_result: int
-    error_msg: Optional[str] = None
+    error_msg: str | None = None
 
 
 # ---------------------------------------------------------------------------
@@ -227,7 +226,7 @@ class AdverFund:
 
 @dataclass
 class AdverFundList:
-    adver_funds_list: List[AdverFund]
+    adver_funds_list: list[AdverFund]
     total_page: int
 
 
@@ -262,7 +261,7 @@ class FundsBillItem:
 
 @dataclass
 class FundsBillList:
-    bill_list: List[FundsBillItem]
+    bill_list: list[FundsBillItem]
     total_page: int
 
 
@@ -280,12 +279,12 @@ class RecoverBillItem:
     fund_id: str
     recover_account_name: str
     recover_amount: int
-    refund_order_list: List[str] = field(default_factory=list)
+    refund_order_list: list[str] = field(default_factory=list)
 
 
 @dataclass
 class RecoverBillList:
-    bill_list: List[RecoverBillItem]
+    bill_list: list[RecoverBillItem]
     total_page: int
 
 
@@ -306,7 +305,7 @@ class ComplaintOrderInfo:
 @dataclass
 class ComplaintMedia:
     media_type: str
-    media_url: List[str] = field(default_factory=list)
+    media_url: list[str] = field(default_factory=list)
 
 
 @dataclass
@@ -323,23 +322,23 @@ class Complaint:
     complaint_detail: str
     complaint_state: str
     payer_openid: str
-    complaint_order_info: List[ComplaintOrderInfo] = field(default_factory=list)
+    complaint_order_info: list[ComplaintOrderInfo] = field(default_factory=list)
     complaint_full_refunded: bool = False
     incoming_user_response: bool = False
     user_complaint_times: int = 0
-    complaint_media_list: List[ComplaintMedia] = field(default_factory=list)
-    problem_description: Optional[str] = None
-    problem_type: Optional[str] = None
-    apply_refund_amount: Optional[int] = None
-    user_tag_list: List[str] = field(default_factory=list)
-    service_order_info: List[ServiceOrderInfo] = field(default_factory=list)
-    payer_phone: Optional[str] = None
+    complaint_media_list: list[ComplaintMedia] = field(default_factory=list)
+    problem_description: str | None = None
+    problem_type: str | None = None
+    apply_refund_amount: int | None = None
+    user_tag_list: list[str] = field(default_factory=list)
+    service_order_info: list[ServiceOrderInfo] = field(default_factory=list)
+    payer_phone: str | None = None
 
 
 @dataclass
 class ComplaintList:
     total: int
-    complaints: List[Complaint]
+    complaints: list[Complaint]
 
 
 # ---------------------------------------------------------------------------
@@ -354,13 +353,13 @@ class NegotiationRecord:
     operate_time: str
     operate_type: str
     operate_details: str
-    complaint_media_list: List[ComplaintMedia] = field(default_factory=list)
+    complaint_media_list: list[ComplaintMedia] = field(default_factory=list)
 
 
 @dataclass
 class NegotiationHistory:
     total: int
-    history: List[NegotiationRecord]
+    history: list[NegotiationRecord]
 
 
 # ---------------------------------------------------------------------------
@@ -376,7 +375,7 @@ class UploadFileResult:
 @dataclass
 class UploadFileSign:
     sign: str
-    cos_url: Optional[str] = None
+    cos_url: str | None = None
 
 
 # ---------------------------------------------------------------------------

@@ -4,9 +4,8 @@ import pytest
 import respx
 from httpx import Response
 
-from wechat_xpay import XPayClient
+from wechat_xpay import XPayClient, models
 from wechat_xpay.exceptions import XPayAPIError
-from wechat_xpay import models
 
 
 class TestXPayClient:

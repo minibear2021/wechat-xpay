@@ -4,6 +4,7 @@ import logging
 
 from wechat_xpay import XPayAsyncClient, XPayClient
 
+from config import APPID, APP_SECRET, ACCESS_TOKEN, ENV, OPENID, SESSION_KEY, USER_IP
 
 def setup_logger() -> logging.Logger:
     """配置日志记录器。"""
@@ -37,23 +38,26 @@ def sync_example_with_logging():
     logger = setup_logger()
 
     with XPayClient(
-        app_id="wx1234567890",
-        app_key="your_app_key",
-        env=0,  # 沙箱环境
+        app_id=APPID,
+        app_key=APP_SECRET,
+        env=ENV,  # 沙箱环境
         logger=logger,
     ) as client:
         try:
             # 查询用户余额
             balance = client.query_user_balance(
-                openid="user_openid",
-                session_key="user_session_key",
+                openid=OPENID,
+                access_token=ACCESS_TOKEN,
+                session_key=SESSION_KEY,
+                user_ip=USER_IP
             )
             print(f"用户余额: {balance.balance}")
 
             # 查询订单
             order = client.query_order(
-                openid="user_openid",
-                session_key="user_session_key",
+                openid=OPENID,
+                access_token=ACCESS_TOKEN,
+                session_key=SESSION_KEY,
                 order_id="order_123",
             )
             print(f"订单状态: {order.status}")
@@ -68,23 +72,25 @@ async def async_example_with_logging():
     logger = setup_logger()
 
     async with XPayAsyncClient(
-        app_id="wx1234567890",
-        app_key="your_app_key",
-        env=0,  # 沙箱环境
+        app_id=APPID,
+        app_key=APP_SECRET,
+        env=ENV,  # 沙箱环境
         logger=logger,
     ) as client:
         try:
             # 查询用户余额
             balance = await client.query_user_balance(
-                openid="user_openid",
-                session_key="user_session_key",
+                openid=OPENID,
+                access_token=ACCESS_TOKEN,
+                session_key=SESSION_KEY,
             )
             print(f"用户余额: {balance.balance}")
 
             # 查询订单
             order = await client.query_order(
-                openid="user_openid",
-                session_key="user_session_key",
+                openid=OPENID,
+                access_token=ACCESS_TOKEN,
+                session_key=SESSION_KEY,
                 order_id="order_123",
             )
             print(f"订单状态: {order.status}")
@@ -97,14 +103,15 @@ async def async_example_with_logging():
 def example_without_logging():
     """不使用日志的示例（默认行为）。"""
     with XPayClient(
-        app_id="wx1234567890",
-        app_key="your_app_key",
-        env=0,
+        app_id=APPID,
+        app_key=APP_SECRET,
+        env=ENV,
     ) as client:
         # 不传入 logger 参数，不会记录任何日志
         balance = client.query_user_balance(
-            openid="user_openid",
-            session_key="user_session_key",
+            openid=OPENID,
+            access_token=ACCESS_TOKEN,
+            session_key=SESSION_KEY,
         )
         print(f"用户余额: {balance.balance}")
 

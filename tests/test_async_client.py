@@ -44,6 +44,7 @@ class TestXPayAsyncClient:
 
         result = await async_client.query_user_balance(
             openid="user_123",
+            access_token="test_access_token",
             session_key="session_key_456",
         )
 
@@ -71,6 +72,7 @@ class TestXPayAsyncClient:
 
         result = await async_client.currency_pay(
             openid="user_123",
+            access_token="test_access_token",
             session_key="session_key_456",
             order_id="ORDER_001",
             amount=200,
@@ -98,6 +100,7 @@ class TestXPayAsyncClient:
         with pytest.raises(XPayAPIError) as exc_info:
             await async_client.query_user_balance(
                 openid="user_123",
+                access_token="test_access_token",
                 session_key="expired_session_key",
             )
 
@@ -114,6 +117,7 @@ class TestXPayAsyncClient:
         with pytest.raises((XPayAPIError, Exception)):
             await async_client.query_user_balance(
                 openid="user_123",
+                access_token="test_access_token",
                 session_key="session_key_456",
             )
 
@@ -152,6 +156,7 @@ class TestXPayAsyncClient:
 
         result = await async_client.query_order(
             openid="user_123",
+            access_token="test_access_token",
             session_key="session_key_456",
             order_id="order_123",
         )
@@ -180,6 +185,7 @@ class TestXPayAsyncClient:
 
         result = await async_client.refund_order(
             openid="user_123",
+            access_token="test_access_token",
             session_key="session_key_456",
             refund_order_id="refund_123",
             left_fee=1000,
@@ -210,7 +216,7 @@ class TestXPayAsyncClient:
             )
         )
 
-        result = await async_client.query_biz_balance(session_key="session_key_456")
+        result = await async_client.query_biz_balance(access_token="test_access_token", session_key="session_key_456")
 
         assert isinstance(result, models.BizBalance)
         assert result.balance_available.amount == "1000.00"
@@ -240,6 +246,7 @@ class TestXPayAsyncClient:
         )
 
         result = await async_client.get_complaint_list(
+            access_token="test_access_token",
             session_key="session_key_456",
             begin_date="2023-01-01",
             end_date="2023-12-31",

@@ -23,8 +23,8 @@ class BaseClient:
         logger: 可选的日志记录器，用于记录 API 调用和响应信息
 
     Note:
-        session_key 不在初始化时传入，而是在每次调用 API 时传入，
-        因为微信的 session_key 有生命周期，会定期过期需要更新。
+        access_token 和 session_key 不在初始化时传入，而是在每次调用 API 时传入，
+        因为它们都有生命周期，会定期过期需要更新。
     """
 
     SANDBOX_BASE_URL = "https://api.xpay.weixin.qq.com"
@@ -48,7 +48,10 @@ class BaseClient:
         self,
         endpoint: str,
         payload: dict[str, Any],
+        access_token: str,
         session_key: str,
+        *,
+        needs_user_sig: bool = False,
     ) -> tuple[str, bytes, dict[str, str]]:
         """准备请求数据。
 
@@ -57,7 +60,10 @@ class BaseClient:
         Args:
             endpoint: API 端点路径（如 '/xpay/query_user_balance'）
             payload: 请求体数据
+            access_token: 接口调用凭证
             session_key: 用户的 session_key，用于计算用户态签名
+            needs_user_sig: 是否需要用户态签名（signature），
+                仅 query_user_balance 和 currency_pay 需要
 
         Returns:
             (完整 URL, 请求体字节, 请求头字典)
@@ -70,18 +76,25 @@ class BaseClient:
         body_str = json.dumps(payload, separators=(",", ":"), ensure_ascii=False)
         body_bytes = body_str.encode("utf-8")
 
-        # 计算签名
+        # 计算支付签名（所有接口都需要）
         pay_sig = calc_pay_sig(endpoint, body_str, self.app_key)
-        signature = calc_signature(body_str, session_key)
 
         # 构建 URL
-        url = f"{self.base_url}{endpoint}?pay_sig={pay_sig}"
+        url = (
+            f"{self.base_url}{endpoint}"
+            f"?access_token={access_token}"
+            f"&pay_sig={pay_sig}"
+        )
+
+        # 仅在需要时追加用户态签名
+        if needs_user_sig:
+            signature = calc_signature(body_str, session_key)
+            url += f"&signature={signature}"
 
         # 请求头
         headers = {
             "Content-Type": "application/json",
             "Accept": "application/json",
-            "X-Signature": signature,
         }
 
         # 记录请求日志
@@ -92,7 +105,7 @@ class BaseClient:
                     "endpoint": endpoint,
                     "url": url,
                     "payload": payload,
-                    "headers": {k: v for k, v in headers.items() if k != "X-Signature"},
+                    "headers": headers,
                 },
             )
 

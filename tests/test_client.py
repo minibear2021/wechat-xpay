@@ -42,6 +42,7 @@ class TestXPayClient:
 
         result = client.query_user_balance(
             openid="test_openid",
+            access_token="test_access_token",
             session_key="test_session_key",
         )
 
@@ -65,6 +66,7 @@ class TestXPayClient:
         with pytest.raises(XPayAPIError) as exc_info:
             client.query_user_balance(
                 openid="invalid_openid",
+                access_token="test_access_token",
                 session_key="test_session_key",
             )
 
@@ -118,6 +120,7 @@ class TestOrderAPIs:
 
         result = client.query_order(
             openid="user_123",
+            access_token="test_access_token",
             session_key="test_session_key",
             order_id="order_123",
         )
@@ -143,6 +146,7 @@ class TestOrderAPIs:
 
         result = client.cancel_currency_pay(
             openid="user_123",
+            access_token="test_access_token",
             session_key="test_session_key",
             pay_order_id="original_order_123",
             order_id="refund_order_123",
@@ -171,6 +175,7 @@ class TestOrderAPIs:
 
         result = client.present_currency(
             openid="user_123",
+            access_token="test_access_token",
             session_key="test_session_key",
             order_id="present_order_123",
             amount=200,
@@ -213,6 +218,7 @@ class TestRefundAndWithdrawAPIs:
 
         result = client.refund_order(
             openid="user_123",
+            access_token="test_access_token",
             session_key="test_session_key",
             refund_order_id="refund_123",
             left_fee=1000,
@@ -242,6 +248,7 @@ class TestRefundAndWithdrawAPIs:
         )
 
         result = client.create_withdraw_order(
+            access_token="test_access_token",
             session_key="test_session_key",
             withdraw_no="withdraw_123",
             withdraw_amount="100.00",
@@ -269,6 +276,7 @@ class TestRefundAndWithdrawAPIs:
         )
 
         result = client.query_withdraw_order(
+            access_token="test_access_token",
             session_key="test_session_key",
             withdraw_no="withdraw_123",
         )
@@ -292,6 +300,7 @@ class TestRefundAndWithdrawAPIs:
         )
 
         result = client.download_bill(
+            access_token="test_access_token",
             session_key="test_session_key",
             begin_ds=20230801,
             end_ds=20230810,
@@ -331,7 +340,7 @@ class TestAdvertisingFundAPIs:
             )
         )
 
-        result = client.query_biz_balance(session_key="test_session_key")
+        result = client.query_biz_balance(access_token="test_access_token", session_key="test_session_key")
 
         assert isinstance(result, models.BizBalance)
         assert result.balance_available.amount == "1000.00"
@@ -360,7 +369,7 @@ class TestAdvertisingFundAPIs:
             )
         )
 
-        result = client.query_transfer_account(session_key="test_session_key")
+        result = client.query_transfer_account(access_token="test_access_token", session_key="test_session_key")
 
         assert isinstance(result, list)
         assert len(result) == 1
@@ -394,6 +403,7 @@ class TestAdvertisingFundAPIs:
         )
 
         result = client.query_adver_funds(
+            access_token="test_access_token",
             session_key="test_session_key",
             page=1,
             page_size=10,
@@ -441,6 +451,7 @@ class TestComplaintAPIs:
         )
 
         result = client.get_complaint_list(
+            access_token="test_access_token",
             session_key="test_session_key",
             begin_date="2023-01-01",
             end_date="2023-12-31",
@@ -474,6 +485,7 @@ class TestComplaintAPIs:
         )
 
         result = client.get_complaint_detail(
+            access_token="test_access_token",
             session_key="test_session_key",
             complaint_id="complaint_123",
         )
@@ -493,6 +505,7 @@ class TestComplaintAPIs:
         )
 
         result = client.response_complaint(
+            access_token="test_access_token",
             session_key="test_session_key",
             complaint_id="complaint_123",
             response_content="We will process this soon",
@@ -512,6 +525,7 @@ class TestComplaintAPIs:
         )
 
         result = client.complete_complaint(
+            access_token="test_access_token",
             session_key="test_session_key",
             complaint_id="complaint_123",
         )
@@ -534,6 +548,7 @@ class TestComplaintAPIs:
         )
 
         result = client.upload_vp_file(
+            access_token="test_access_token",
             session_key="test_session_key",
             file_name="test.jpg",
             img_url="https://example.com/image.jpg",

@@ -54,6 +54,7 @@ class TestLogging:
 
             client.query_user_balance(
                 openid="user_123",
+                access_token="test_access_token",
                 session_key="session_key_456",
             )
 
@@ -94,6 +95,7 @@ class TestLogging:
 
             balance = client.query_user_balance(
                 openid="user_123",
+                access_token="test_access_token",
                 session_key="session_key_456",
             )
 
@@ -130,6 +132,7 @@ class TestLogging:
             with pytest.raises(XPayAPIError):
                 client.query_user_balance(
                     openid="user_123",
+                    access_token="test_access_token",
                     session_key="session_key_456",
                 )
 
@@ -179,6 +182,7 @@ class TestLogging:
         ) as client:
             await client.query_user_balance(
                 openid="user_123",
+                access_token="test_access_token",
                 session_key="session_key_456",
             )
 
@@ -215,6 +219,7 @@ class TestLogging:
         ) as client:
             balance = await client.query_user_balance(
                 openid="user_123",
+                access_token="test_access_token",
                 session_key="session_key_456",
             )
 

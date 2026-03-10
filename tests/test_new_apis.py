@@ -31,6 +31,7 @@ class TestNotifyProvideGoods:
         )
 
         result = client.notify_provide_goods(
+            access_token="test_access_token",
             session_key="session_key_456",
             order_id="order_123",
         )
@@ -63,6 +64,7 @@ class TestNotifyProvideGoods:
         )
 
         result = await client.notify_provide_goods(
+            access_token="test_access_token",
             session_key="session_key_456",
             wx_order_id="wx_order_123",
         )
@@ -106,6 +108,7 @@ class TestGoodsManagement:
         )
 
         result = client.start_upload_goods(
+            access_token="test_access_token",
             session_key="session_key_456",
             goods=[
                 {
@@ -153,7 +156,7 @@ class TestGoodsManagement:
             )
         )
 
-        result = client.query_upload_goods(session_key="session_key_456")
+        result = client.query_upload_goods(access_token="test_access_token", session_key="session_key_456")
 
         assert isinstance(result, models.GoodsUploadStatus)
         assert result.status == 2
@@ -184,6 +187,7 @@ class TestGoodsManagement:
         )
 
         result = client.start_publish_goods(
+            access_token="test_access_token",
             session_key="session_key_456",
             goods=[{"id": "goods_001"}, {"id": "goods_002"}],
         )
@@ -215,7 +219,7 @@ class TestGoodsManagement:
             )
         )
 
-        result = client.query_publish_goods(session_key="session_key_456")
+        result = client.query_publish_goods(access_token="test_access_token", session_key="session_key_456")
 
         assert isinstance(result, models.GoodsPublishStatus)
         assert result.status == 2
@@ -246,6 +250,7 @@ class TestFundsBillAPIs:
         )
 
         result = client.create_funds_bill(
+            access_token="test_access_token",
             session_key="session_key_456",
             transfer_account_uid=12345,
             transfer_account_agency_id=67890,
@@ -275,6 +280,7 @@ class TestFundsBillAPIs:
         )
 
         result = client.bind_transfer_account(
+            access_token="test_access_token",
             session_key="session_key_456",
             transfer_account_uid=12345,
             transfer_account_agency_id=67890,
@@ -317,6 +323,7 @@ class TestFundsBillAPIs:
         )
 
         result = client.query_funds_bill(
+            access_token="test_access_token",
             session_key="session_key_456",
             page=1,
             page_size=10,
@@ -360,6 +367,7 @@ class TestFundsBillAPIs:
         )
 
         result = client.query_recover_bill(
+            access_token="test_access_token",
             session_key="session_key_456",
             page=1,
             page_size=10,
@@ -392,6 +400,7 @@ class TestFundsBillAPIs:
         )
 
         result = client.download_adverfunds_order(
+            access_token="test_access_token",
             session_key="session_key_456",
             begin_ds=20230801,
             end_ds=20230810,
@@ -441,6 +450,7 @@ class TestNegotiationHistory:
         )
 
         result = client.get_negotiation_history(
+            access_token="test_access_token",
             session_key="session_key_456",
             complaint_id="complaint_123",
             offset=0,
@@ -478,6 +488,7 @@ class TestUploadFileSign:
         )
 
         result = client.get_upload_file_sign(
+            access_token="test_access_token",
             session_key="session_key_456",
             file_name="test.jpg",
             file_type="image/jpeg",
@@ -509,6 +520,7 @@ class TestUploadFileSign:
         )
 
         result = await client.get_upload_file_sign(
+            access_token="test_access_token",
             session_key="session_key_456",
             file_name="test.png",
             file_type="image/png",

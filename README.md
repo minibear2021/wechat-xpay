@@ -30,9 +30,10 @@ with XPayClient(
     app_key="你的_app_key",
     env=0,  # 0=沙箱环境，1=生产环境
 ) as client:
-    # session_key 在每次调用 API 时传入，因为它会定期过期
+    # access_token 和 session_key 在每次调用 API 时传入，因为它们都会定期过期
     balance = client.query_user_balance(
         openid="用户_openid",
+        access_token="你的_access_token",
         session_key="用户_session_key",
     )
     print(f"余额: {balance.balance}")
@@ -54,6 +55,7 @@ async def main():
     ) as client:
         balance = await client.query_user_balance(
             openid="用户_openid",
+            access_token="你的_access_token",
             session_key="用户_session_key",
         )
         print(f"余额: {balance.balance}")
@@ -62,14 +64,14 @@ async def main():
 asyncio.run(main())
 ```
 
-## 为什么 session_key 要在每次调用时传入？
+## 为什么 access_token 和 session_key 要在每次调用时传入？
 
-微信的 `session_key` 有生命周期，会定期过期（通常 30 天）。当它过期时，你需要重新授权用户获取新的 `session_key`。
+微信的 `access_token`（通过 `auth.getAccessToken` 获取）和 `session_key`（通过 `auth.code2Session` 获取）都有生命周期，会定期过期。
 
-通过在每次 API 调用时传入 `session_key` 而不是在初始化时传入：
-- 你可以优雅地处理 `session_key` 过期
-- 不同用户可以使用同一个客户端实例，各自使用自己的 `session_key`
-- 你可以轮换 `session_key` 而无需重新创建客户端
+通过在每次 API 调用时传入而不是在客户端初始化时传入：
+- 你可以优雅地处理凭证过期，及时更新
+- 不同用户可以使用同一个客户端实例，各自使用自己的 `access_token` 和 `session_key`
+- 你可以轮换凭证而无需重新创建客户端
 
 ## API 覆盖
 
@@ -105,6 +107,7 @@ with XPayClient(
     # 查询用户余额
     balance = client.query_user_balance(
         openid="用户_openid",
+        access_token="你的_access_token",
         session_key="用户_session_key",
     )
     print(f"余额: {balance.balance}")
@@ -113,6 +116,7 @@ with XPayClient(
     # 处理支付
     result = client.currency_pay(
         openid="用户_openid",
+        access_token="你的_access_token",
         session_key="用户_session_key",
         order_id="订单_123",
         amount=100,  # 代币数量
@@ -123,6 +127,7 @@ with XPayClient(
     # 退款
     result = client.refund_order(
         openid="用户_openid",
+        access_token="你的_access_token",
         session_key="用户_session_key",
         refund_order_id="退款_123",
         left_fee=1000,
@@ -149,14 +154,16 @@ async def main():
         # 查询用户余额
         balance = await client.query_user_balance(
             openid="用户_openid",
+            access_token="你的_access_token",
             session_key="用户_session_key",
         )
         print(f"余额: {balance.balance}")
 
-        # 并发处理多个支付（使用不同的 session_key）
+        # 并发处理多个支付（使用不同的 access_token / session_key）
         tasks = [
             client.currency_pay(
                 openid=f"用户_{i}",
+                access_token="你的_access_token",
                 session_key=f"session_key_{i}",  # 每个用户有自己的 session_key
                 order_id=f"订单_{i}",
                 amount=100,
@@ -204,6 +211,7 @@ client = XPayClient(...)
 try:
     balance = client.query_user_balance(
         openid="用户_openid",
+        access_token="你的_access_token",
         session_key="用户_session_key",
     )
 except XPayAPIError as e:
@@ -282,6 +290,7 @@ with XPayClient(
 ) as client:
     balance = client.query_user_balance(
         openid="user_openid",
+        access_token="your_access_token",
         session_key="user_session_key",
     )
 ```
@@ -318,6 +327,7 @@ async with XPayAsyncClient(
 ) as client:
     balance = await client.query_user_balance(
         openid="user_openid",
+        access_token="your_access_token",
         session_key="user_session_key",
     )
 ```
@@ -335,15 +345,24 @@ with XPayClient(
 ) as client:
     balance = client.query_user_balance(
         openid="user_openid",
+        access_token="your_access_token",
         session_key="user_session_key",
     )
 ```
 
 ## 认证
 
-SDK 自动处理两种签名：
-- **pay_sig**: 使用 AppKey 签名，用于 API 认证（在客户端初始化时配置）
-- **signature**: 使用用户的 session_key 签名，用于用户态验证（每次 API 调用时传入）
+SDK 自动处理请求认证，所有签名通过 URL 查询参数传递：
+
+- **access_token**: 接口调用凭证，通过 `auth.getAccessToken` 获取，每次 API 调用时传入
+- **pay_sig**: 使用 AppKey 的 HMAC-SHA256 签名，所有接口都需要，SDK 自动计算
+- **signature**: 使用 session_key 的 HMAC-SHA256 用户态签名，仅 `query_user_balance` 和 `currency_pay` 接口需要，SDK 自动判断并计算
+
+URL 格式示例：
+```
+https://api.weixin.qq.com/xpay/{endpoint}?access_token=xxx&pay_sig=xxx
+https://api.weixin.qq.com/xpay/{endpoint}?access_token=xxx&pay_sig=xxx&signature=xxx
+```
 
 ## 环境
 

@@ -27,8 +27,8 @@ class BaseClient:
         因为它们都有生命周期，会定期过期需要更新。
     """
 
-    SANDBOX_BASE_URL = "https://api.xpay.weixin.qq.com"
-    PROD_BASE_URL = "https://api.xpay.weixin.qq.com"
+    SANDBOX_BASE_URL = "https://api.weixin.qq.com"
+    PROD_BASE_URL = "https://api.weixin.qq.com"
 
     def __init__(
         self,
@@ -52,7 +52,7 @@ class BaseClient:
         session_key: str,
         *,
         needs_user_sig: bool = False,
-    ) -> tuple[str, bytes, dict[str, str]]:
+    ) -> tuple[str, str, dict[str, str]]:
         """准备请求数据。
 
         添加公共字段、序列化请求体、计算签名、构建完整 URL。
@@ -66,15 +66,17 @@ class BaseClient:
                 仅 query_user_balance 和 currency_pay 需要
 
         Returns:
-            (完整 URL, 请求体字节, 请求头字典)
+            (完整 URL, 请求体字典, 请求头字典)
         """
         # 添加公共字段
-        payload["appid"] = self.app_id
         payload["env"] = self.env
 
         # 序列化请求体用于签名
-        body_str = json.dumps(payload, separators=(",", ":"), ensure_ascii=False)
+        body_str = json.dumps(payload) #, separators=(",", ":"), ensure_ascii=False)
         body_bytes = body_str.encode("utf-8")
+
+        # 签名消息 = uri + '&' + post_body
+        sign_msg = endpoint + "&" + body_str
 
         # 计算支付签名（所有接口都需要）
         pay_sig = calc_pay_sig(endpoint, body_str, self.app_key)
@@ -87,6 +89,7 @@ class BaseClient:
         )
 
         # 仅在需要时追加用户态签名
+        signature = None
         if needs_user_sig:
             signature = calc_signature(body_str, session_key)
             url += f"&signature={signature}"
@@ -100,16 +103,25 @@ class BaseClient:
         # 记录请求日志
         if self.logger:
             self.logger.debug(
-                f"XPay API Request: {endpoint}",
-                extra={
-                    "endpoint": endpoint,
-                    "url": url,
-                    "payload": payload,
-                    "headers": headers,
-                },
+                "XPay API Request: %s\n"
+                "  URL: %s\n"
+                "  POST Body: %s\n"
+                "  Sign Message (uri&body): %s\n"
+                "  pay_sig: %s\n"
+                "  signature: %s\n"
+                "  app_key: %s...%s\n"
+                "  session_key: %s",
+                endpoint,
+                url,
+                body_str,
+                sign_msg,
+                pay_sig,
+                signature or "(not required)",
+                self.app_key[:4], self.app_key[-4:],
+                session_key[:4] + "..." + session_key[-4:] if len(session_key) > 8 else "****",
             )
 
-        return url, body_bytes, headers
+        return url, body_str, headers
 
     def _handle_response(self, data: dict[str, Any]) -> dict[str, Any]:
         """处理响应数据。
@@ -132,13 +144,16 @@ class BaseClient:
         if self.logger:
             if errcode != 0:
                 self.logger.error(
-                    f"XPay API Error: {errmsg}",
-                    extra={"errcode": errcode, "errmsg": errmsg, "response": data},
+                    "XPay API Error: errcode=%s, errmsg=%s\n"
+                    "  Response Body: %s",
+                    errcode, errmsg,
+                    json.dumps(data, ensure_ascii=False),
                 )
             else:
                 self.logger.debug(
-                    "XPay API Response: Success",
-                    extra={"response": data},
+                    "XPay API Response: Success\n"
+                    "  Response Body: %s",
+                    json.dumps(data, ensure_ascii=False),
                 )
 
         if errcode != 0:

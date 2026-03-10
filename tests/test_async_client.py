@@ -25,7 +25,7 @@ class TestXPayAsyncClient:
     @respx.mock
     async def test_query_user_balance(self, async_client):
         """测试异步查询用户余额。"""
-        route = respx.post("https://api.xpay.weixin.qq.com/xpay/query_user_balance").mock(
+        route = respx.post("https://api.weixin.qq.com/xpay/query_user_balance").mock(
             return_value=Response(
                 200,
                 json={
@@ -57,7 +57,7 @@ class TestXPayAsyncClient:
     @respx.mock
     async def test_currency_pay(self, async_client):
         """测试异步代币支付。"""
-        route = respx.post("https://api.xpay.weixin.qq.com/xpay/currency_pay").mock(
+        route = respx.post("https://api.weixin.qq.com/xpay/currency_pay").mock(
             return_value=Response(
                 200,
                 json={
@@ -87,7 +87,7 @@ class TestXPayAsyncClient:
     @respx.mock
     async def test_api_error(self, async_client):
         """测试异步 API 错误处理。"""
-        respx.post("https://api.xpay.weixin.qq.com/xpay/query_user_balance").mock(
+        respx.post("https://api.weixin.qq.com/xpay/query_user_balance").mock(
             return_value=Response(
                 200,
                 json={
@@ -110,7 +110,7 @@ class TestXPayAsyncClient:
     @respx.mock
     async def test_http_error(self, async_client):
         """测试异步 HTTP 错误处理。"""
-        respx.post("https://api.xpay.weixin.qq.com/xpay/query_user_balance").mock(
+        respx.post("https://api.weixin.qq.com/xpay/query_user_balance").mock(
             return_value=Response(500, text="Internal Server Error")
         )
 
@@ -135,7 +135,7 @@ class TestXPayAsyncClient:
     @respx.mock
     async def test_query_order(self, async_client):
         """测试异步查询订单。"""
-        route = respx.post("https://api.xpay.weixin.qq.com/xpay/query_order").mock(
+        route = respx.post("https://api.weixin.qq.com/xpay/query_order").mock(
             return_value=Response(
                 200,
                 json={
@@ -169,7 +169,7 @@ class TestXPayAsyncClient:
     @respx.mock
     async def test_refund_order(self, async_client):
         """测试异步退款。"""
-        route = respx.post("https://api.xpay.weixin.qq.com/xpay/refund_order").mock(
+        route = respx.post("https://api.weixin.qq.com/xpay/refund_order").mock(
             return_value=Response(
                 200,
                 json={
@@ -202,7 +202,7 @@ class TestXPayAsyncClient:
     @respx.mock
     async def test_query_biz_balance(self, async_client):
         """测试异步查询商家余额。"""
-        route = respx.post("https://api.xpay.weixin.qq.com/xpay/query_biz_balance").mock(
+        route = respx.post("https://api.weixin.qq.com/xpay/query_biz_balance").mock(
             return_value=Response(
                 200,
                 json={
@@ -225,7 +225,7 @@ class TestXPayAsyncClient:
     @respx.mock
     async def test_get_complaint_list(self, async_client):
         """测试异步获取投诉列表。"""
-        route = respx.post("https://api.xpay.weixin.qq.com/xpay/get_complaint_list").mock(
+        route = respx.post("https://api.weixin.qq.com/xpay/get_complaint_list").mock(
             return_value=Response(
                 200,
                 json={

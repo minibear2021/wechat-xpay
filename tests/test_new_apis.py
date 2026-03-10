@@ -17,7 +17,7 @@ class TestNotifyProvideGoods:
             app_key="test_key",
             env=0,
         )
-        route = respx.post("https://api.xpay.weixin.qq.com/xpay/notify_provide_goods").mock(
+        route = respx.post("https://api.weixin.qq.com/xpay/notify_provide_goods").mock(
             return_value=Response(
                 200,
                 json={
@@ -50,7 +50,7 @@ class TestNotifyProvideGoods:
             app_key="test_key",
             env=0,
         )
-        route = respx.post("https://api.xpay.weixin.qq.com/xpay/notify_provide_goods").mock(
+        route = respx.post("https://api.weixin.qq.com/xpay/notify_provide_goods").mock(
             return_value=Response(
                 200,
                 json={
@@ -86,7 +86,7 @@ class TestGoodsManagement:
             app_key="test_key",
             env=0,
         )
-        route = respx.post("https://api.xpay.weixin.qq.com/xpay/start_upload_goods").mock(
+        route = respx.post("https://api.weixin.qq.com/xpay/start_upload_goods").mock(
             return_value=Response(
                 200,
                 json={
@@ -135,7 +135,7 @@ class TestGoodsManagement:
             app_key="test_key",
             env=0,
         )
-        route = respx.post("https://api.xpay.weixin.qq.com/xpay/query_upload_goods").mock(
+        route = respx.post("https://api.weixin.qq.com/xpay/query_upload_goods").mock(
             return_value=Response(
                 200,
                 json={
@@ -171,7 +171,7 @@ class TestGoodsManagement:
             app_key="test_key",
             env=0,
         )
-        route = respx.post("https://api.xpay.weixin.qq.com/xpay/start_publish_goods").mock(
+        route = respx.post("https://api.weixin.qq.com/xpay/start_publish_goods").mock(
             return_value=Response(
                 200,
                 json={
@@ -205,7 +205,7 @@ class TestGoodsManagement:
             app_key="test_key",
             env=0,
         )
-        route = respx.post("https://api.xpay.weixin.qq.com/xpay/query_publish_goods").mock(
+        route = respx.post("https://api.weixin.qq.com/xpay/query_publish_goods").mock(
             return_value=Response(
                 200,
                 json={
@@ -238,7 +238,7 @@ class TestFundsBillAPIs:
             app_key="test_key",
             env=0,
         )
-        route = respx.post("https://api.xpay.weixin.qq.com/xpay/create_funds_bill").mock(
+        route = respx.post("https://api.weixin.qq.com/xpay/create_funds_bill").mock(
             return_value=Response(
                 200,
                 json={
@@ -272,7 +272,7 @@ class TestFundsBillAPIs:
             app_key="test_key",
             env=0,
         )
-        route = respx.post("https://api.xpay.weixin.qq.com/xpay/bind_transfer_accout").mock(
+        route = respx.post("https://api.weixin.qq.com/xpay/bind_transfer_accout").mock(
             return_value=Response(
                 200,
                 json={"errcode": 0, "errmsg": "ok"},
@@ -297,7 +297,7 @@ class TestFundsBillAPIs:
             app_key="test_key",
             env=0,
         )
-        route = respx.post("https://api.xpay.weixin.qq.com/xpay/query_funds_bill").mock(
+        route = respx.post("https://api.weixin.qq.com/xpay/query_funds_bill").mock(
             return_value=Response(
                 200,
                 json={
@@ -343,7 +343,7 @@ class TestFundsBillAPIs:
             app_key="test_key",
             env=0,
         )
-        route = respx.post("https://api.xpay.weixin.qq.com/xpay/query_recover_bill").mock(
+        route = respx.post("https://api.weixin.qq.com/xpay/query_recover_bill").mock(
             return_value=Response(
                 200,
                 json={
@@ -388,7 +388,7 @@ class TestFundsBillAPIs:
             app_key="test_key",
             env=0,
         )
-        route = respx.post("https://api.xpay.weixin.qq.com/xpay/download_adverfunds_order").mock(
+        route = respx.post("https://api.weixin.qq.com/xpay/download_adverfunds_order").mock(
             return_value=Response(
                 200,
                 json={
@@ -422,7 +422,7 @@ class TestNegotiationHistory:
             app_key="test_key",
             env=0,
         )
-        route = respx.post("https://api.xpay.weixin.qq.com/xpay/get_negotiation_history").mock(
+        route = respx.post("https://api.weixin.qq.com/xpay/get_negotiation_history").mock(
             return_value=Response(
                 200,
                 json={
@@ -475,7 +475,7 @@ class TestUploadFileSign:
             app_key="test_key",
             env=0,
         )
-        route = respx.post("https://api.xpay.weixin.qq.com/xpay/get_upload_file_sign").mock(
+        route = respx.post("https://api.weixin.qq.com/xpay/get_upload_file_sign").mock(
             return_value=Response(
                 200,
                 json={
@@ -507,7 +507,7 @@ class TestUploadFileSign:
             app_key="test_key",
             env=0,
         )
-        route = respx.post("https://api.xpay.weixin.qq.com/xpay/get_upload_file_sign").mock(
+        route = respx.post("https://api.weixin.qq.com/xpay/get_upload_file_sign").mock(
             return_value=Response(
                 200,
                 json={

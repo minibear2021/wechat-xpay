@@ -23,7 +23,7 @@ class TestXPayClient:
     @respx.mock
     def test_query_user_balance(self, client):
         """测试查询用户余额。"""
-        route = respx.post("https://api.xpay.weixin.qq.com/xpay/query_user_balance").mock(
+        route = respx.post("https://api.weixin.qq.com/xpay/query_user_balance").mock(
             return_value=Response(
                 200,
                 json={
@@ -53,7 +53,7 @@ class TestXPayClient:
     @respx.mock
     def test_api_error(self, client):
         """测试 API 错误处理。"""
-        respx.post("https://api.xpay.weixin.qq.com/xpay/query_user_balance").mock(
+        respx.post("https://api.weixin.qq.com/xpay/query_user_balance").mock(
             return_value=Response(
                 200,
                 json={
@@ -99,7 +99,7 @@ class TestOrderAPIs:
     @respx.mock
     def test_query_order(self, client):
         """测试查询订单。"""
-        route = respx.post("https://api.xpay.weixin.qq.com/xpay/query_order").mock(
+        route = respx.post("https://api.weixin.qq.com/xpay/query_order").mock(
             return_value=Response(
                 200,
                 json={
@@ -133,7 +133,7 @@ class TestOrderAPIs:
     @respx.mock
     def test_cancel_currency_pay(self, client):
         """测试取消代币支付。"""
-        route = respx.post("https://api.xpay.weixin.qq.com/xpay/cancel_currency_pay").mock(
+        route = respx.post("https://api.weixin.qq.com/xpay/cancel_currency_pay").mock(
             return_value=Response(
                 200,
                 json={
@@ -160,7 +160,7 @@ class TestOrderAPIs:
     @respx.mock
     def test_present_currency(self, client):
         """测试赠送代币。"""
-        route = respx.post("https://api.xpay.weixin.qq.com/xpay/present_currency").mock(
+        route = respx.post("https://api.weixin.qq.com/xpay/present_currency").mock(
             return_value=Response(
                 200,
                 json={
@@ -202,7 +202,7 @@ class TestRefundAndWithdrawAPIs:
     @respx.mock
     def test_refund_order(self, client):
         """测试退款订单。"""
-        route = respx.post("https://api.xpay.weixin.qq.com/xpay/refund_order").mock(
+        route = respx.post("https://api.weixin.qq.com/xpay/refund_order").mock(
             return_value=Response(
                 200,
                 json={
@@ -235,7 +235,7 @@ class TestRefundAndWithdrawAPIs:
     @respx.mock
     def test_create_withdraw_order(self, client):
         """测试创建提现订单。"""
-        route = respx.post("https://api.xpay.weixin.qq.com/xpay/create_withdraw_order").mock(
+        route = respx.post("https://api.weixin.qq.com/xpay/create_withdraw_order").mock(
             return_value=Response(
                 200,
                 json={
@@ -261,7 +261,7 @@ class TestRefundAndWithdrawAPIs:
     @respx.mock
     def test_query_withdraw_order(self, client):
         """测试查询提现订单。"""
-        route = respx.post("https://api.xpay.weixin.qq.com/xpay/query_withdraw_order").mock(
+        route = respx.post("https://api.weixin.qq.com/xpay/query_withdraw_order").mock(
             return_value=Response(
                 200,
                 json={
@@ -288,7 +288,7 @@ class TestRefundAndWithdrawAPIs:
     @respx.mock
     def test_download_bill(self, client):
         """测试下载账单。"""
-        route = respx.post("https://api.xpay.weixin.qq.com/xpay/download_bill").mock(
+        route = respx.post("https://api.weixin.qq.com/xpay/download_bill").mock(
             return_value=Response(
                 200,
                 json={
@@ -326,7 +326,7 @@ class TestAdvertisingFundAPIs:
     @respx.mock
     def test_query_biz_balance(self, client):
         """测试查询商家余额。"""
-        route = respx.post("https://api.xpay.weixin.qq.com/xpay/query_biz_balance").mock(
+        route = respx.post("https://api.weixin.qq.com/xpay/query_biz_balance").mock(
             return_value=Response(
                 200,
                 json={
@@ -349,7 +349,7 @@ class TestAdvertisingFundAPIs:
     @respx.mock
     def test_query_transfer_account(self, client):
         """测试查询转账账户。"""
-        route = respx.post("https://api.xpay.weixin.qq.com/xpay/query_transfer_account").mock(
+        route = respx.post("https://api.weixin.qq.com/xpay/query_transfer_account").mock(
             return_value=Response(
                 200,
                 json={
@@ -380,7 +380,7 @@ class TestAdvertisingFundAPIs:
     @respx.mock
     def test_query_adver_funds(self, client):
         """测试查询广告金。"""
-        route = respx.post("https://api.xpay.weixin.qq.com/xpay/query_adver_funds").mock(
+        route = respx.post("https://api.weixin.qq.com/xpay/query_adver_funds").mock(
             return_value=Response(
                 200,
                 json={
@@ -430,7 +430,7 @@ class TestComplaintAPIs:
     @respx.mock
     def test_get_complaint_list(self, client):
         """测试获取投诉列表。"""
-        route = respx.post("https://api.xpay.weixin.qq.com/xpay/get_complaint_list").mock(
+        route = respx.post("https://api.weixin.qq.com/xpay/get_complaint_list").mock(
             return_value=Response(
                 200,
                 json={
@@ -467,7 +467,7 @@ class TestComplaintAPIs:
     @respx.mock
     def test_get_complaint_detail(self, client):
         """测试获取投诉详情。"""
-        route = respx.post("https://api.xpay.weixin.qq.com/xpay/get_complaint_detail").mock(
+        route = respx.post("https://api.weixin.qq.com/xpay/get_complaint_detail").mock(
             return_value=Response(
                 200,
                 json={
@@ -497,7 +497,7 @@ class TestComplaintAPIs:
     @respx.mock
     def test_response_complaint(self, client):
         """测试回复投诉。"""
-        route = respx.post("https://api.xpay.weixin.qq.com/xpay/response_complaint").mock(
+        route = respx.post("https://api.weixin.qq.com/xpay/response_complaint").mock(
             return_value=Response(
                 200,
                 json={"errcode": 0, "errmsg": "ok"},
@@ -517,7 +517,7 @@ class TestComplaintAPIs:
     @respx.mock
     def test_complete_complaint(self, client):
         """测试完成投诉处理。"""
-        route = respx.post("https://api.xpay.weixin.qq.com/xpay/complete_complaint").mock(
+        route = respx.post("https://api.weixin.qq.com/xpay/complete_complaint").mock(
             return_value=Response(
                 200,
                 json={"errcode": 0, "errmsg": "ok"},
@@ -536,7 +536,7 @@ class TestComplaintAPIs:
     @respx.mock
     def test_upload_vp_file(self, client):
         """测试上传文件。"""
-        route = respx.post("https://api.xpay.weixin.qq.com/xpay/upload_vp_file").mock(
+        route = respx.post("https://api.weixin.qq.com/xpay/upload_vp_file").mock(
             return_value=Response(
                 200,
                 json={

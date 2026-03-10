@@ -108,11 +108,11 @@ class XPayClient(BaseClient):
             XPayAPIError: API 返回错误
             httpx.HTTPError: HTTP 请求错误
         """
-        url, body_bytes, headers = self._prepare_request(
+        url, body_str, headers = self._prepare_request(
             endpoint, payload, access_token, session_key,
             needs_user_sig=needs_user_sig,
         )
-        response = self._client.post(url, content=body_bytes, headers=headers)
+        response = self._client.post(url, content=body_str.encode("utf-8"), headers=headers)
         response.raise_for_status()
         return self._handle_response(response.json())
 

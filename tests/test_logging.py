@@ -28,7 +28,7 @@ class TestLogging:
         logger.addHandler(handler)
 
         with respx.mock:
-            respx.post("https://api.xpay.weixin.qq.com/xpay/query_user_balance").mock(
+            respx.post("https://api.weixin.qq.com/xpay/query_user_balance").mock(
                 return_value=Response(
                     200,
                     json={
@@ -69,7 +69,7 @@ class TestLogging:
     def test_sync_client_without_logger(self):
         """测试同步客户端不使用 logger。"""
         with respx.mock:
-            respx.post("https://api.xpay.weixin.qq.com/xpay/query_user_balance").mock(
+            respx.post("https://api.weixin.qq.com/xpay/query_user_balance").mock(
                 return_value=Response(
                     200,
                     json={
@@ -115,7 +115,7 @@ class TestLogging:
         logger.addHandler(handler)
 
         with respx.mock:
-            respx.post("https://api.xpay.weixin.qq.com/xpay/query_user_balance").mock(
+            respx.post("https://api.weixin.qq.com/xpay/query_user_balance").mock(
                 return_value=Response(
                     200,
                     json={"errcode": -1, "errmsg": "系统错误"},
@@ -157,7 +157,7 @@ class TestLogging:
         logger.setLevel(logging.DEBUG)
         logger.addHandler(handler)
 
-        respx.post("https://api.xpay.weixin.qq.com/xpay/query_user_balance").mock(
+        respx.post("https://api.weixin.qq.com/xpay/query_user_balance").mock(
             return_value=Response(
                 200,
                 json={
@@ -194,7 +194,7 @@ class TestLogging:
     @respx.mock
     async def test_async_client_without_logger(self):
         """测试异步客户端不使用 logger。"""
-        respx.post("https://api.xpay.weixin.qq.com/xpay/query_user_balance").mock(
+        respx.post("https://api.weixin.qq.com/xpay/query_user_balance").mock(
             return_value=Response(
                 200,
                 json={

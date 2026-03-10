@@ -10,41 +10,33 @@ import hashlib
 import hmac
 
 
-def calc_pay_sig(uri: str, post_body: str, app_key: str) -> str:
-    """Compute the pay_sig (payment signature).
-
-    Args:
-        uri:       API path with leading slash, no query string.
-                   e.g. '/xpay/query_user_balance'
-        post_body: Exact string that will be sent as the HTTP POST body.
-        app_key:   AppKey matching the request env (production or sandbox).
-
-    Returns:
-        Lowercase hex HMAC-SHA256 digest.
+def calc_pay_sig(uri, post_body, appkey):
+    """ pay_sig签名算法
+      Args:
+     uri - 当前请求的API的uri部分，不带query_string 例如：/xpay/query_user_balance
+          post_body - http POST的数据包体
+          appkey    - 对应环境的AppKey
+      Returns:
+          支付请求签名pay_sig
     """
-    message = uri + "&" + post_body
-    return hmac.new(
-        key=app_key.encode("utf-8"),
-        msg=message.encode("utf-8"),
-        digestmod=hashlib.sha256,
-    ).hexdigest()
+    need_sign_msg = uri + '&' + post_body
+    pay_sig = hmac.new(key = appkey.encode('utf-8'), msg = need_sign_msg.encode('utf-8'),
+                       digestmod=hashlib.sha256).hexdigest()
+    return pay_sig
 
 
-def calc_signature(post_body: str, session_key: str) -> str:
-    """Compute the user-state signature (signature).
-
-    Args:
-        post_body:   Exact string that will be sent as the HTTP POST body.
-        session_key: The current user's valid session_key.
-
-    Returns:
-        Lowercase hex HMAC-SHA256 digest.
+def calc_signature(post_body, session_key):
+    """ 用户登录态signature签名算法
+      Args:
+          post_body   - http POST的数据包体
+          session_key - 当前用户有效的session_key，参考auth.code2Session接口
+      Returns:
+          用户登录态签名signature
     """
-    return hmac.new(
-        key=session_key.encode("utf-8"),
-        msg=post_body.encode("utf-8"),
-        digestmod=hashlib.sha256,
-    ).hexdigest()
+    need_sign_msg = post_body
+    signature = hmac.new(key = session_key.encode('utf-8'), msg = need_sign_msg.encode('utf-8'),
+                       digestmod=hashlib.sha256).hexdigest()
+    return signature
 
 
 def generate_request_signature(
@@ -69,7 +61,7 @@ def generate_request_signature(
     """
     import json
 
-    body_str = json.dumps(payload, separators=(",", ":"), ensure_ascii=False)
+    body_str = json.dumps(payload, ensure_ascii=False)
     pay_sig = calc_pay_sig(uri, body_str, app_key)
     signature = calc_signature(body_str, session_key)
     return pay_sig, signature

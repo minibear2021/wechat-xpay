@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import logging
 from typing import Any
 
 from wechat_xpay.auth import calc_pay_sig, calc_signature
@@ -19,6 +20,7 @@ class BaseClient:
         app_key: 用于计算 pay_sig 的 AppKey
         env: 环境，0 表示沙箱，1 表示生产环境
         base_url: 可选的自定义基础 URL
+        logger: 可选的日志记录器，用于记录 API 调用和响应信息
 
     Note:
         session_key 不在初始化时传入，而是在每次调用 API 时传入，
@@ -34,11 +36,13 @@ class BaseClient:
         app_key: str,
         env: int = 1,
         base_url: str | None = None,
+        logger: logging.Logger | None = None,
     ) -> None:
         self.app_id = app_id
         self.app_key = app_key
         self.env = env
         self.base_url = base_url or (self.PROD_BASE_URL if env == 1 else self.SANDBOX_BASE_URL)
+        self.logger = logger
 
     def _prepare_request(
         self,
@@ -80,6 +84,18 @@ class BaseClient:
             "X-Signature": signature,
         }
 
+        # 记录请求日志
+        if self.logger:
+            self.logger.debug(
+                f"XPay API Request: {endpoint}",
+                extra={
+                    "endpoint": endpoint,
+                    "url": url,
+                    "payload": payload,
+                    "headers": {k: v for k, v in headers.items() if k != "X-Signature"},
+                },
+            )
+
         return url, body_bytes, headers
 
     def _handle_response(self, data: dict[str, Any]) -> dict[str, Any]:
@@ -96,6 +112,22 @@ class BaseClient:
         Raises:
             XPayAPIError: API 返回非零错误码
         """
-        if data.get("errcode", 0) != 0:
-            raise XPayAPIError(data.get("errcode", -1), data.get("errmsg", "未知错误"))
+        errcode = data.get("errcode", 0)
+        errmsg = data.get("errmsg", "")
+
+        # 记录响应日志
+        if self.logger:
+            if errcode != 0:
+                self.logger.error(
+                    f"XPay API Error: {errmsg}",
+                    extra={"errcode": errcode, "errmsg": errmsg, "response": data},
+                )
+            else:
+                self.logger.debug(
+                    "XPay API Response: Success",
+                    extra={"response": data},
+                )
+
+        if errcode != 0:
+            raise XPayAPIError(errcode, errmsg)
         return {k: v for k, v in data.items() if k not in ("errcode", "errmsg")}

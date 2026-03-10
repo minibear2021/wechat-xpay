@@ -9,6 +9,7 @@
 - ✅ **HTTP/2** - 基于 httpx，支持 HTTP/2
 - ✅ **Webhook 解析** - 处理微信推送通知
 - ✅ **错误处理** - 完善的异常层次结构和错误码
+- ✅ **日志支持** - 可选的日志记录功能，便于调试
 
 ## 安装
 
@@ -243,6 +244,99 @@ try:
     result = await client.query_user_balance(...)
 finally:
     await client.close()
+```
+
+## 日志功能
+
+SDK 支持可选的日志记录功能，可以记录所有 API 请求和响应信息，便于开发调试。
+
+### 启用日志
+
+```python
+import logging
+from wechat_xpay import XPayClient
+
+# 配置日志记录器
+logger = logging.getLogger("wechat_xpay")
+logger.setLevel(logging.DEBUG)
+
+# 添加控制台处理器
+console_handler = logging.StreamHandler()
+console_handler.setLevel(logging.DEBUG)
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+console_handler.setFormatter(formatter)
+logger.addHandler(console_handler)
+
+# 添加文件处理器（可选）
+file_handler = logging.FileHandler("xpay.log", encoding="utf-8")
+file_handler.setLevel(logging.DEBUG)
+file_handler.setFormatter(formatter)
+logger.addHandler(file_handler)
+
+# 传入 logger 参数
+with XPayClient(
+    app_id="wx1234567890",
+    app_key="your_app_key",
+    env=0,
+    logger=logger,  # 启用日志
+) as client:
+    balance = client.query_user_balance(
+        openid="user_openid",
+        session_key="user_session_key",
+    )
+```
+
+### 日志内容
+
+启用日志后，SDK 会记录：
+
+- **请求信息**：API 端点、URL、请求参数（不包含敏感签名信息）
+- **响应信息**：成功响应的数据
+- **错误信息**：API 错误码和错误消息
+
+日志级别：
+- `DEBUG`：记录所有请求和响应详情
+- `ERROR`：仅记录 API 错误
+
+### 异步客户端日志
+
+```python
+import logging
+from wechat_xpay import XPayAsyncClient
+
+logger = logging.getLogger("wechat_xpay")
+logger.setLevel(logging.DEBUG)
+handler = logging.StreamHandler()
+handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
+logger.addHandler(handler)
+
+async with XPayAsyncClient(
+    app_id="wx1234567890",
+    app_key="your_app_key",
+    env=0,
+    logger=logger,
+) as client:
+    balance = await client.query_user_balance(
+        openid="user_openid",
+        session_key="user_session_key",
+    )
+```
+
+### 不使用日志
+
+如果不传入 `logger` 参数，SDK 不会记录任何日志（默认行为）：
+
+```python
+# 不传入 logger，不会记录日志
+with XPayClient(
+    app_id="wx1234567890",
+    app_key="your_app_key",
+    env=0,
+) as client:
+    balance = client.query_user_balance(
+        openid="user_openid",
+        session_key="user_session_key",
+    )
 ```
 
 ## 认证

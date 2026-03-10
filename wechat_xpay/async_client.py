@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 from typing import Any
 
 import httpx
@@ -20,6 +21,7 @@ class XPayAsyncClient(BaseClient):
         app_key: 用于计算 pay_sig 的 AppKey
         env: 环境，0 表示沙箱，1 表示生产环境
         base_url: 可选的自定义基础 URL
+        logger: 可选的日志记录器，用于记录 API 调用和响应信息
 
     Examples:
         # 方式 1：异步上下文管理器（推荐，自动关闭连接）
@@ -46,6 +48,25 @@ class XPayAsyncClient(BaseClient):
         )
         print(f"余额: {balance.balance}")
         await client.close()
+
+        # 方式 3：使用自定义 logger
+        import logging
+        logger = logging.getLogger("wechat_xpay")
+        logger.setLevel(logging.DEBUG)
+        handler = logging.StreamHandler()
+        handler.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
+        logger.addHandler(handler)
+
+        async with XPayAsyncClient(
+            app_id="wx1234567890",
+            app_key="your_app_key",
+            env=0,
+            logger=logger,
+        ) as client:
+            balance = await client.query_user_balance(
+                openid="user_openid",
+                session_key="user_session_key",
+            )
     """
 
     def __init__(
@@ -54,8 +75,9 @@ class XPayAsyncClient(BaseClient):
         app_key: str,
         env: int = 1,
         base_url: str | None = None,
+        logger: logging.Logger | None = None,
     ) -> None:
-        super().__init__(app_id, app_key, env, base_url)
+        super().__init__(app_id, app_key, env, base_url, logger)
         self._client = httpx.AsyncClient()
 
     async def _http_post(

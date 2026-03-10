@@ -5,6 +5,28 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0] - 2026-03-10
+
+### Added
+- 可选的日志支持功能
+  - 在客户端初始化时可传入 `logger` 参数
+  - 记录 API 请求信息（端点、URL、参数）
+  - 记录 API 响应信息（成功和错误）
+  - 不记录敏感的签名信息
+  - 完全向后兼容，不传入 logger 时不会记录日志
+- 新增 `examples/logging_example.py` 示例文件
+- 新增 5 个日志功能测试用例
+
+### Changed
+- 改进 GitHub Actions 发布流程
+  - 先发布到 TestPyPI 进行验证
+  - 测试从 TestPyPI 安装
+  - 验证通过后才发布到正式 PyPI
+
+### Documentation
+- README 新增日志功能使用文档
+- 添加日志配置和使用示例
+
 ## [0.2.0] - 2026-03-10
 
 ### Added

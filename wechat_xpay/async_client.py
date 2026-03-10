@@ -109,7 +109,10 @@ class XPayAsyncClient(BaseClient):
             httpx.HTTPError: HTTP 请求错误
         """
         url, body_bytes, headers = self._prepare_request(
-            endpoint, payload, access_token, session_key,
+            endpoint,
+            payload,
+            access_token,
+            session_key,
             needs_user_sig=needs_user_sig,
         )
         response = await self._client.post(url, content=body_bytes, headers=headers)
@@ -171,7 +174,10 @@ class XPayAsyncClient(BaseClient):
         if user_ip:
             payload["user_ip"] = user_ip
         response = await self._http_post(
-            "/xpay/query_user_balance", payload, access_token, session_key,
+            "/xpay/query_user_balance",
+            payload,
+            access_token,
+            session_key,
             needs_user_sig=True,
         )
         return models.UserBalance(**response)
@@ -212,7 +218,10 @@ class XPayAsyncClient(BaseClient):
         if remark:
             payload["remark"] = remark
         response = await self._http_post(
-            "/xpay/currency_pay", payload, access_token, session_key,
+            "/xpay/currency_pay",
+            payload,
+            access_token,
+            session_key,
             needs_user_sig=True,
         )
         return models.CurrencyPayResult(**response)
@@ -248,7 +257,9 @@ class XPayAsyncClient(BaseClient):
         }
         if user_ip:
             payload["user_ip"] = user_ip
-        response = await self._http_post("/xpay/cancel_currency_pay", payload, access_token, session_key)
+        response = await self._http_post(
+            "/xpay/cancel_currency_pay", payload, access_token, session_key
+        )
         return models.CancelCurrencyPayResult(**response)
 
     async def present_currency(
@@ -275,7 +286,9 @@ class XPayAsyncClient(BaseClient):
             "order_id": order_id,
             "amount": amount,
         }
-        response = await self._http_post("/xpay/present_currency", payload, access_token, session_key)
+        response = await self._http_post(
+            "/xpay/present_currency", payload, access_token, session_key
+        )
         return models.PresentCurrencyResult(**response)
 
     # -------------------------------------------------------------------------
@@ -381,7 +394,9 @@ class XPayAsyncClient(BaseClient):
         payload: dict[str, Any] = {"withdraw_no": withdraw_no}
         if withdraw_amount:
             payload["withdraw_amount"] = withdraw_amount
-        response = await self._http_post("/xpay/create_withdraw_order", payload, access_token, session_key)
+        response = await self._http_post(
+            "/xpay/create_withdraw_order", payload, access_token, session_key
+        )
         return models.WithdrawOrderResult(**response)
 
     async def query_withdraw_order(
@@ -400,7 +415,9 @@ class XPayAsyncClient(BaseClient):
             WithdrawOrder，包含提现详情
         """
         payload = {"withdraw_no": withdraw_no}
-        response = await self._http_post("/xpay/query_withdraw_order", payload, access_token, session_key)
+        response = await self._http_post(
+            "/xpay/query_withdraw_order", payload, access_token, session_key
+        )
         return models.WithdrawOrder(**response)
 
     async def download_bill(
@@ -445,7 +462,9 @@ class XPayAsyncClient(BaseClient):
             BizBalance，包含可用余额详情
         """
         payload: dict[str, Any] = {}
-        response = await self._http_post("/xpay/query_biz_balance", payload, access_token, session_key)
+        response = await self._http_post(
+            "/xpay/query_biz_balance", payload, access_token, session_key
+        )
         balance_data = response.get("balance_available", {})
         return models.BizBalance(
             balance_available=models.BizBalanceAvailable(
@@ -468,7 +487,9 @@ class XPayAsyncClient(BaseClient):
             TransferAccount 对象列表
         """
         payload: dict[str, Any] = {}
-        response = await self._http_post("/xpay/query_transfer_account", payload, access_token, session_key)
+        response = await self._http_post(
+            "/xpay/query_transfer_account", payload, access_token, session_key
+        )
         return [models.TransferAccount(**acct) for acct in response.get("acct_list", [])]
 
     async def query_adver_funds(
@@ -492,7 +513,9 @@ class XPayAsyncClient(BaseClient):
             "page": page,
             "page_size": page_size,
         }
-        response = await self._http_post("/xpay/query_adver_funds", payload, access_token, session_key)
+        response = await self._http_post(
+            "/xpay/query_adver_funds", payload, access_token, session_key
+        )
         return models.AdverFundList(
             total_page=response.get("total_page", 1),
             adver_funds_list=[
@@ -531,7 +554,9 @@ class XPayAsyncClient(BaseClient):
             "offset": offset,
             "limit": limit,
         }
-        response = await self._http_post("/xpay/get_complaint_list", payload, access_token, session_key)
+        response = await self._http_post(
+            "/xpay/get_complaint_list", payload, access_token, session_key
+        )
         return models.ComplaintList(
             total=response.get("total", 0),
             complaints=[models.Complaint(**c) for c in response.get("complaints", [])],
@@ -553,7 +578,9 @@ class XPayAsyncClient(BaseClient):
             Complaint，包含完整详情
         """
         payload = {"complaint_id": complaint_id}
-        response = await self._http_post("/xpay/get_complaint_detail", payload, access_token, session_key)
+        response = await self._http_post(
+            "/xpay/get_complaint_detail", payload, access_token, session_key
+        )
         return models.Complaint(**response.get("complaint", {}))
 
     async def response_complaint(
@@ -656,7 +683,9 @@ class XPayAsyncClient(BaseClient):
             payload["order_id"] = order_id
         if wx_order_id:
             payload["wx_order_id"] = wx_order_id
-        response = await self._http_post("/xpay/notify_provide_goods", payload, access_token, session_key)
+        response = await self._http_post(
+            "/xpay/notify_provide_goods", payload, access_token, session_key
+        )
         return models.NotifyProvideGoodsResult(**response)
 
     # -------------------------------------------------------------------------
@@ -679,7 +708,9 @@ class XPayAsyncClient(BaseClient):
             GoodsUploadStatus，包含上传任务状态
         """
         payload: dict[str, Any] = {"goods": goods}
-        response = await self._http_post("/xpay/start_upload_goods", payload, access_token, session_key)
+        response = await self._http_post(
+            "/xpay/start_upload_goods", payload, access_token, session_key
+        )
         return models.GoodsUploadStatus(
             status=response.get("status", 0),
             upload_item=[
@@ -701,7 +732,9 @@ class XPayAsyncClient(BaseClient):
             GoodsUploadStatus，包含上传任务状态和每个道具的上传状态
         """
         payload: dict[str, Any] = {}
-        response = await self._http_post("/xpay/query_upload_goods", payload, access_token, session_key)
+        response = await self._http_post(
+            "/xpay/query_upload_goods", payload, access_token, session_key
+        )
         return models.GoodsUploadStatus(
             status=response.get("status", 0),
             upload_item=[
@@ -725,7 +758,9 @@ class XPayAsyncClient(BaseClient):
             GoodsPublishStatus，包含发布任务状态
         """
         payload: dict[str, Any] = {"goods": goods}
-        response = await self._http_post("/xpay/start_publish_goods", payload, access_token, session_key)
+        response = await self._http_post(
+            "/xpay/start_publish_goods", payload, access_token, session_key
+        )
         return models.GoodsPublishStatus(
             status=response.get("status", 0),
             publish_item=[
@@ -747,7 +782,9 @@ class XPayAsyncClient(BaseClient):
             GoodsPublishStatus，包含发布任务状态和每个道具的发布状态
         """
         payload: dict[str, Any] = {}
-        response = await self._http_post("/xpay/query_publish_goods", payload, access_token, session_key)
+        response = await self._http_post(
+            "/xpay/query_publish_goods", payload, access_token, session_key
+        )
         return models.GoodsPublishStatus(
             status=response.get("status", 0),
             publish_item=[
@@ -796,7 +833,9 @@ class XPayAsyncClient(BaseClient):
         }
         if request_id:
             payload["request_id"] = request_id
-        response = await self._http_post("/xpay/create_funds_bill", payload, access_token, session_key)
+        response = await self._http_post(
+            "/xpay/create_funds_bill", payload, access_token, session_key
+        )
         return models.FundsBillResult(**response)
 
     async def bind_transfer_account(
@@ -844,7 +883,9 @@ class XPayAsyncClient(BaseClient):
             "page": page,
             "page_size": page_size,
         }
-        response = await self._http_post("/xpay/query_funds_bill", payload, access_token, session_key)
+        response = await self._http_post(
+            "/xpay/query_funds_bill", payload, access_token, session_key
+        )
         return models.FundsBillList(
             total_page=response.get("total_page", 1),
             bill_list=[models.FundsBillItem(**item) for item in response.get("bill_list", [])],
@@ -871,7 +912,9 @@ class XPayAsyncClient(BaseClient):
             "page": page,
             "page_size": page_size,
         }
-        response = await self._http_post("/xpay/query_recover_bill", payload, access_token, session_key)
+        response = await self._http_post(
+            "/xpay/query_recover_bill", payload, access_token, session_key
+        )
         return models.RecoverBillList(
             total_page=response.get("total_page", 1),
             bill_list=[models.RecoverBillItem(**item) for item in response.get("bill_list", [])],
@@ -898,7 +941,9 @@ class XPayAsyncClient(BaseClient):
             "begin_ds": begin_ds,
             "end_ds": end_ds,
         }
-        response = await self._http_post("/xpay/download_adverfunds_order", payload, access_token, session_key)
+        response = await self._http_post(
+            "/xpay/download_adverfunds_order", payload, access_token, session_key
+        )
         return models.AdverfundsOrderDownload(**response)
 
     # -------------------------------------------------------------------------
@@ -929,7 +974,9 @@ class XPayAsyncClient(BaseClient):
             "offset": offset,
             "limit": limit,
         }
-        response = await self._http_post("/xpay/get_negotiation_history", payload, access_token, session_key)
+        response = await self._http_post(
+            "/xpay/get_negotiation_history", payload, access_token, session_key
+        )
         return models.NegotiationHistory(
             total=response.get("total", 0),
             history=[models.NegotiationRecord(**record) for record in response.get("history", [])],
@@ -960,5 +1007,7 @@ class XPayAsyncClient(BaseClient):
             "file_name": file_name,
             "file_type": file_type,
         }
-        response = await self._http_post("/xpay/get_upload_file_sign", payload, access_token, session_key)
+        response = await self._http_post(
+            "/xpay/get_upload_file_sign", payload, access_token, session_key
+        )
         return models.UploadFileSign(**response)

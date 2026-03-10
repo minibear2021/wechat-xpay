@@ -216,7 +216,9 @@ class TestXPayAsyncClient:
             )
         )
 
-        result = await async_client.query_biz_balance(access_token="test_access_token", session_key="session_key_456")
+        result = await async_client.query_biz_balance(
+            access_token="test_access_token", session_key="session_key_456"
+        )
 
         assert isinstance(result, models.BizBalance)
         assert result.balance_available.amount == "1000.00"

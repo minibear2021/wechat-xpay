@@ -6,6 +6,7 @@ from wechat_xpay import XPayAsyncClient, XPayClient
 
 from config import APPID, APP_SECRET, ACCESS_TOKEN, ENV, OPENID, SESSION_KEY, USER_IP
 
+
 def setup_logger() -> logging.Logger:
     """配置日志记录器。"""
     logger = logging.getLogger("wechat_xpay")
@@ -46,10 +47,7 @@ def sync_example_with_logging():
         try:
             # 查询用户余额
             balance = client.query_user_balance(
-                openid=OPENID,
-                access_token=ACCESS_TOKEN,
-                session_key=SESSION_KEY,
-                user_ip=USER_IP
+                openid=OPENID, access_token=ACCESS_TOKEN, session_key=SESSION_KEY, user_ip=USER_IP
             )
             print(f"用户余额: {balance.balance}")
 

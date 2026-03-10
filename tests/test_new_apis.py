@@ -156,7 +156,9 @@ class TestGoodsManagement:
             )
         )
 
-        result = client.query_upload_goods(access_token="test_access_token", session_key="session_key_456")
+        result = client.query_upload_goods(
+            access_token="test_access_token", session_key="session_key_456"
+        )
 
         assert isinstance(result, models.GoodsUploadStatus)
         assert result.status == 2
@@ -219,7 +221,9 @@ class TestGoodsManagement:
             )
         )
 
-        result = client.query_publish_goods(access_token="test_access_token", session_key="session_key_456")
+        result = client.query_publish_goods(
+            access_token="test_access_token", session_key="session_key_456"
+        )
 
         assert isinstance(result, models.GoodsPublishStatus)
         assert result.status == 2

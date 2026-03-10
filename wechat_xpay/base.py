@@ -72,7 +72,7 @@ class BaseClient:
         payload["env"] = self.env
 
         # 序列化请求体用于签名
-        body_str = json.dumps(payload) #, separators=(",", ":"), ensure_ascii=False)
+        body_str = json.dumps(payload)  # , separators=(",", ":"), ensure_ascii=False)
         body_bytes = body_str.encode("utf-8")
 
         # 签名消息 = uri + '&' + post_body
@@ -82,11 +82,7 @@ class BaseClient:
         pay_sig = calc_pay_sig(endpoint, body_str, self.app_key)
 
         # 构建 URL
-        url = (
-            f"{self.base_url}{endpoint}"
-            f"?access_token={access_token}"
-            f"&pay_sig={pay_sig}"
-        )
+        url = f"{self.base_url}{endpoint}" f"?access_token={access_token}" f"&pay_sig={pay_sig}"
 
         # 仅在需要时追加用户态签名
         signature = None
@@ -117,7 +113,8 @@ class BaseClient:
                 sign_msg,
                 pay_sig,
                 signature or "(not required)",
-                self.app_key[:4], self.app_key[-4:],
+                self.app_key[:4],
+                self.app_key[-4:],
                 session_key[:4] + "..." + session_key[-4:] if len(session_key) > 8 else "****",
             )
 
@@ -144,15 +141,14 @@ class BaseClient:
         if self.logger:
             if errcode != 0:
                 self.logger.error(
-                    "XPay API Error: errcode=%s, errmsg=%s\n"
-                    "  Response Body: %s",
-                    errcode, errmsg,
+                    "XPay API Error: errcode=%s, errmsg=%s\n" "  Response Body: %s",
+                    errcode,
+                    errmsg,
                     json.dumps(data, ensure_ascii=False),
                 )
             else:
                 self.logger.debug(
-                    "XPay API Response: Success\n"
-                    "  Response Body: %s",
+                    "XPay API Response: Success\n" "  Response Body: %s",
                     json.dumps(data, ensure_ascii=False),
                 )
 

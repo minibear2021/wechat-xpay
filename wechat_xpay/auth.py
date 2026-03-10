@@ -11,31 +11,33 @@ import hmac
 
 
 def calc_pay_sig(uri, post_body, appkey):
-    """ pay_sig签名算法
-      Args:
-     uri - 当前请求的API的uri部分，不带query_string 例如：/xpay/query_user_balance
-          post_body - http POST的数据包体
-          appkey    - 对应环境的AppKey
-      Returns:
-          支付请求签名pay_sig
+    """pay_sig签名算法
+     Args:
+    uri - 当前请求的API的uri部分，不带query_string 例如：/xpay/query_user_balance
+         post_body - http POST的数据包体
+         appkey    - 对应环境的AppKey
+     Returns:
+         支付请求签名pay_sig
     """
-    need_sign_msg = uri + '&' + post_body
-    pay_sig = hmac.new(key = appkey.encode('utf-8'), msg = need_sign_msg.encode('utf-8'),
-                       digestmod=hashlib.sha256).hexdigest()
+    need_sign_msg = uri + "&" + post_body
+    pay_sig = hmac.new(
+        key=appkey.encode("utf-8"), msg=need_sign_msg.encode("utf-8"), digestmod=hashlib.sha256
+    ).hexdigest()
     return pay_sig
 
 
 def calc_signature(post_body, session_key):
-    """ 用户登录态signature签名算法
-      Args:
-          post_body   - http POST的数据包体
-          session_key - 当前用户有效的session_key，参考auth.code2Session接口
-      Returns:
-          用户登录态签名signature
+    """用户登录态signature签名算法
+    Args:
+        post_body   - http POST的数据包体
+        session_key - 当前用户有效的session_key，参考auth.code2Session接口
+    Returns:
+        用户登录态签名signature
     """
     need_sign_msg = post_body
-    signature = hmac.new(key = session_key.encode('utf-8'), msg = need_sign_msg.encode('utf-8'),
-                       digestmod=hashlib.sha256).hexdigest()
+    signature = hmac.new(
+        key=session_key.encode("utf-8"), msg=need_sign_msg.encode("utf-8"), digestmod=hashlib.sha256
+    ).hexdigest()
     return signature
 
 

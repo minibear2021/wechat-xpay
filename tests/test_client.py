@@ -340,7 +340,9 @@ class TestAdvertisingFundAPIs:
             )
         )
 
-        result = client.query_biz_balance(access_token="test_access_token", session_key="test_session_key")
+        result = client.query_biz_balance(
+            access_token="test_access_token", session_key="test_session_key"
+        )
 
         assert isinstance(result, models.BizBalance)
         assert result.balance_available.amount == "1000.00"
@@ -369,7 +371,9 @@ class TestAdvertisingFundAPIs:
             )
         )
 
-        result = client.query_transfer_account(access_token="test_access_token", session_key="test_session_key")
+        result = client.query_transfer_account(
+            access_token="test_access_token", session_key="test_session_key"
+        )
 
         assert isinstance(result, list)
         assert len(result) == 1

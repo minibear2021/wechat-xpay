@@ -109,7 +109,10 @@ class XPayClient(BaseClient):
             httpx.HTTPError: HTTP 请求错误
         """
         url, body_str, headers = self._prepare_request(
-            endpoint, payload, access_token, session_key,
+            endpoint,
+            payload,
+            access_token,
+            session_key,
             needs_user_sig=needs_user_sig,
         )
         response = self._client.post(url, content=body_str.encode("utf-8"), headers=headers)
@@ -171,7 +174,10 @@ class XPayClient(BaseClient):
         if user_ip:
             payload["user_ip"] = user_ip
         response = self._http_post(
-            "/xpay/query_user_balance", payload, access_token, session_key,
+            "/xpay/query_user_balance",
+            payload,
+            access_token,
+            session_key,
             needs_user_sig=True,
         )
         return models.UserBalance(**response)
@@ -212,7 +218,10 @@ class XPayClient(BaseClient):
         if remark:
             payload["remark"] = remark
         response = self._http_post(
-            "/xpay/currency_pay", payload, access_token, session_key,
+            "/xpay/currency_pay",
+            payload,
+            access_token,
+            session_key,
             needs_user_sig=True,
         )
         return models.CurrencyPayResult(**response)
@@ -381,7 +390,9 @@ class XPayClient(BaseClient):
         payload: dict[str, Any] = {"withdraw_no": withdraw_no}
         if withdraw_amount:
             payload["withdraw_amount"] = withdraw_amount
-        response = self._http_post("/xpay/create_withdraw_order", payload, access_token, session_key)
+        response = self._http_post(
+            "/xpay/create_withdraw_order", payload, access_token, session_key
+        )
         return models.WithdrawOrderResult(**response)
 
     def query_withdraw_order(
@@ -468,7 +479,9 @@ class XPayClient(BaseClient):
             TransferAccount 对象列表
         """
         payload: dict[str, Any] = {}
-        response = self._http_post("/xpay/query_transfer_account", payload, access_token, session_key)
+        response = self._http_post(
+            "/xpay/query_transfer_account", payload, access_token, session_key
+        )
         return [models.TransferAccount(**acct) for acct in response.get("acct_list", [])]
 
     def query_adver_funds(
@@ -898,7 +911,9 @@ class XPayClient(BaseClient):
             "begin_ds": begin_ds,
             "end_ds": end_ds,
         }
-        response = self._http_post("/xpay/download_adverfunds_order", payload, access_token, session_key)
+        response = self._http_post(
+            "/xpay/download_adverfunds_order", payload, access_token, session_key
+        )
         return models.AdverfundsOrderDownload(**response)
 
     # -------------------------------------------------------------------------
@@ -929,7 +944,9 @@ class XPayClient(BaseClient):
             "offset": offset,
             "limit": limit,
         }
-        response = self._http_post("/xpay/get_negotiation_history", payload, access_token, session_key)
+        response = self._http_post(
+            "/xpay/get_negotiation_history", payload, access_token, session_key
+        )
         return models.NegotiationHistory(
             total=response.get("total", 0),
             history=[models.NegotiationRecord(**record) for record in response.get("history", [])],

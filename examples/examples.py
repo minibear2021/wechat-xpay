@@ -52,15 +52,13 @@ def sync_example_with_logging():
 
             # 查询商户余额
             biz_balance = client.query_biz_balance(
-                access_token=ACCESS_TOKEN,
-                session_key=SESSION_KEY
+                access_token=ACCESS_TOKEN, session_key=SESSION_KEY
             )
             print(f"商户余额: {biz_balance.balance_available}")
 
             # 查询广告资金列表
             adver_funds_list = client.query_adver_funds(
-                access_token=ACCESS_TOKEN,
-                session_key=SESSION_KEY
+                access_token=ACCESS_TOKEN, session_key=SESSION_KEY
             )
             print("广告资金列表:")
             for adver_funds in adver_funds_list.adver_funds_list:
@@ -101,15 +99,13 @@ async def async_example_with_logging():
 
             # 查询商户余额
             biz_balance = await client.query_biz_balance(
-                access_token=ACCESS_TOKEN,
-                session_key=SESSION_KEY
+                access_token=ACCESS_TOKEN, session_key=SESSION_KEY
             )
             print(f"商户余额: {biz_balance.balance_available}")
 
             # 查询广告资金列表
             adver_funds_list = await client.query_adver_funds(
-                access_token=ACCESS_TOKEN,
-                session_key=SESSION_KEY
+                access_token=ACCESS_TOKEN, session_key=SESSION_KEY
             )
             print("广告资金列表:")
             for adver_funds in adver_funds_list.adver_funds_list:

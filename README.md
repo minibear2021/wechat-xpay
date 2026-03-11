@@ -7,6 +7,10 @@
 > pip install wechatpayv3
 > ```
 
+欢迎微信支付开发者扫码进 QQ 群(群号：973102221)讨论，欢迎提交代码，欢迎star、follow、fork：
+
+![image](docs/qq.png)
+
 ## 特性
 
 - ✅ **同步与异步** - 同时支持同步和异步操作
@@ -68,15 +72,6 @@ async def main():
 
 asyncio.run(main())
 ```
-
-## 为什么 access_token 和 session_key 要在每次调用时传入？
-
-微信的 `access_token`（通过 `auth.getAccessToken` 获取）和 `session_key`（通过 `auth.code2Session` 获取）都有生命周期，会定期过期。
-
-通过在每次 API 调用时传入而不是在客户端初始化时传入：
-- 你可以优雅地处理凭证过期，及时更新
-- 不同用户可以使用同一个客户端实例，各自使用自己的 `access_token` 和 `session_key`
-- 你可以轮换凭证而无需重新创建客户端
 
 ## API 覆盖
 

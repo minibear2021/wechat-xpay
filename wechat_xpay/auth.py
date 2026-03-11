@@ -2,39 +2,39 @@
 Signature computation for WeChat XPay server API.
 
 Two independent HMAC-SHA256 signatures:
-  pay_sig   - keyed by appKey,     message = uri + '&' + post_body
-  signature - keyed by session_key, message = post_body
+  pay_sig   - keyed by appKey,     message = uri + '&' + signData
+  signature - keyed by session_key, message = signData
 """
 
 import hashlib
 import hmac
 
 
-def calc_pay_sig(uri, post_body, appkey):
+def calc_pay_sig(uri, signData, appkey):
     """pay_sig签名算法
      Args:
-    uri - 当前请求的API的uri部分，不带query_string 例如：/xpay/query_user_balance
-         post_body - http POST的数据包体
-         appkey    - 对应环境的AppKey
+        uri      - 前端wx API填"requestVirtualPayment"或后端填当前请求的API的uri部分，不带query_string 例如："/xpay/query_user_balance"
+        signData - 前端wx API的signData字段或后端http POST的数据包体
+        appkey   - 对应环境的AppKey
      Returns:
-         支付请求签名pay_sig
+        支付请求签名pay_sig
     """
-    need_sign_msg = uri + "&" + post_body
+    need_sign_msg = uri + "&" + signData
     pay_sig = hmac.new(
         key=appkey.encode("utf-8"), msg=need_sign_msg.encode("utf-8"), digestmod=hashlib.sha256
     ).hexdigest()
     return pay_sig
 
 
-def calc_signature(post_body, session_key):
+def calc_signature(signData, session_key):
     """用户登录态signature签名算法
     Args:
-        post_body   - http POST的数据包体
+        signData    - 前端wx API的signData字段或后端http POST的数据包体
         session_key - 当前用户有效的session_key，参考auth.code2Session接口
     Returns:
         用户登录态签名signature
     """
-    need_sign_msg = post_body
+    need_sign_msg = signData
     signature = hmac.new(
         key=session_key.encode("utf-8"), msg=need_sign_msg.encode("utf-8"), digestmod=hashlib.sha256
     ).hexdigest()

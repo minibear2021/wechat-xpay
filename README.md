@@ -76,19 +76,15 @@ asyncio.run(main())
 ## API 覆盖
 
 - [x] 用户代币管理 (query_user_balance, currency_pay, cancel_currency_pay, present_currency)
-- [x] 订单管理 (query_order)
-- [x] 退款 (refund_order)
-- [x] 提现 (create_withdraw_order, query_withdraw_order)
+- [x] 订单管理 (query_order, refund_order)
+- [x] 提现 (create_withdraw_order, query_withdraw_order, query_biz_balance)
 - [x] 发货通知 (notify_provide_goods)
-- [x] 商家余额 (query_biz_balance)
-- [x] 广告金 (query_transfer_account, query_adver_funds, create_funds_bill)
-- [x] 广告金账单 (query_funds_bill, query_recover_bill, download_adverfunds_order)
-- [x] 转账账户绑定 (bind_transfer_account)
+- [x] 广告金 (query_transfer_account, query_adver_funds, create_funds_bill, query_funds_bill, query_recover_bill, download_adverfunds_order, bind_transfer_account)
 - [x] 道具管理 (start_upload_goods, query_upload_goods, start_publish_goods, query_publish_goods)
 - [x] 投诉管理 (get_complaint_list, get_complaint_detail, response_complaint, complete_complaint, get_negotiation_history)
 - [x] 文件上传 (upload_vp_file, get_upload_file_sign)
-- [x] 账单下载 (download_bill, download_adverfunds_order)
-- [x] Webhook 解析 (发货通知、代币支付通知、退款通知、投诉通知)
+- [x] 账单下载 (download_bill)
+- [x] Webhook 解析 (道具发货通知、代币支付通知、退款通知、用户投诉通知)
 
 **共计 29 个 API 端点，已全部实现。**
 
@@ -364,10 +360,35 @@ https://api.weixin.qq.com/xpay/{endpoint}?access_token=xxx&pay_sig=xxx
 https://api.weixin.qq.com/xpay/{endpoint}?access_token=xxx&pay_sig=xxx&signature=xxx
 ```
 
+### 签名工具函数
+
+用于计算前端 `wx.requestVirtualPayment` 的 `paySig` 和 `signature` 参数，可直接导入签名函数：
+
+```python
+from wechat_xpay import calc_pay_sig, calc_signature
+
+# 计算 pay_sig（支付签名）
+# uri：
+#       前端 wx.requestVirtualPayment 固定填 "requestVirtualPayment"
+pay_sig = calc_pay_sig(
+    uri="requestVirtualPayment",
+    signData='{"offerId":"123","buyQuantity":1,"env":0,"currencyType":"CNY","productId":"testproductId","goodsPrice":10,"outTradeNo":"xxxxxx","attach":"testdata"}',
+    appkey="你的_app_key",
+)
+
+# 计算 signature（用户态签名）
+signature = calc_signature(
+    signData='{"offerId":"123","buyQuantity":1,"env":0,"currencyType":"CNY","productId":"testproductId","goodsPrice":10,"outTradeNo":"xxxxxx","attach":"testdata"}',
+    session_key="用户的_session_key",
+)
+```
+
+> **注意**：`signData` 必须和前端调用wx.requestVirtualPayment传入的`signData`完全一致。
+
 ## 环境
 
-- `env=0`: 沙箱环境（用于测试）
-- `env=1`: 生产环境
+- `env=0`: 生产环境
+- `env=1`: 沙箱环境（用于测试）
 
 ## 文档
 

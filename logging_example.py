@@ -2,9 +2,8 @@
 
 import logging
 
+from config import ACCESS_TOKEN, APP_SECRET, APPID, ENV, OPENID, SESSION_KEY, USER_IP
 from wechat_xpay import XPayAsyncClient, XPayClient
-
-from config import APPID, APP_SECRET, ACCESS_TOKEN, ENV, OPENID, SESSION_KEY, USER_IP
 
 
 def setup_logger() -> logging.Logger:

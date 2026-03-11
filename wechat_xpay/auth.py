@@ -10,14 +10,14 @@ import hashlib
 import hmac
 
 
-def calc_pay_sig(uri, signData, appkey):
+def calc_pay_sig(uri: str, signData: str, appkey: str) -> str:  # noqa: N803
     """pay_sig签名算法
-     Args:
-        uri      - 前端wx API填"requestVirtualPayment"或后端填当前请求的API的uri部分，不带query_string 例如："/xpay/query_user_balance"
-        signData - 前端wx API的signData字段或后端http POST的数据包体
-        appkey   - 对应环境的AppKey
-     Returns:
-        支付请求签名pay_sig
+    Args:
+       uri      - 前端wx API填"requestVirtualPayment"或后端填当前请求的API的uri部分，不带query_string 例如："/xpay/query_user_balance"
+       signData - 前端wx API的signData字段或后端http POST的数据包体
+       appkey   - 对应环境的AppKey
+    Returns:
+       支付请求签名pay_sig
     """
     need_sign_msg = uri + "&" + signData
     pay_sig = hmac.new(
@@ -26,7 +26,7 @@ def calc_pay_sig(uri, signData, appkey):
     return pay_sig
 
 
-def calc_signature(signData, session_key):
+def calc_signature(signData: str, session_key: str) -> str:  # noqa: N803
     """用户登录态signature签名算法
     Args:
         signData    - 前端wx API的signData字段或后端http POST的数据包体

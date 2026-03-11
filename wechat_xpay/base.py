@@ -72,8 +72,7 @@ class BaseClient:
         payload["env"] = self.env
 
         # 序列化请求体用于签名
-        body_str = json.dumps(payload)  # , separators=(",", ":"), ensure_ascii=False)
-        body_bytes = body_str.encode("utf-8")
+        body_str = json.dumps(payload)
 
         # 签名消息 = uri + '&' + post_body
         sign_msg = endpoint + "&" + body_str

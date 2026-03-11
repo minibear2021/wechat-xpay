@@ -40,7 +40,7 @@ def sync_example_with_logging():
     with XPayClient(
         app_id=APPID,
         app_key=APP_SECRET,
-        env=ENV,  # 沙箱环境
+        env=ENV,
         logger=logger,
     ) as client:
         try:
@@ -87,7 +87,7 @@ async def async_example_with_logging():
     async with XPayAsyncClient(
         app_id=APPID,
         app_key=APP_SECRET,
-        env=ENV,  # 沙箱环境
+        env=ENV,
         logger=logger,
     ) as client:
         try:

@@ -1,6 +1,6 @@
-# 微信支付虚拟支付 Python SDK
+# 微信小程序虚拟支付 Python SDK
 
-微信支付虚拟支付服务端 API 的 Python SDK。
+微信小程序虚拟支付服务端 API 的 Python SDK。
 
 > **注意**：本项目是 **微信小程序虚拟支付** 的后端 Python SDK。如果你需要的是 **微信支付 v3 API** 的 后端 Python SDK，请使用 [wechatpayv3](https://github.com/minibear2021/wechatpayv3)：
 > ```bash

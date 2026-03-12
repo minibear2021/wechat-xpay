@@ -418,7 +418,7 @@ errcode	int	错误码
 errmsg	string	错误信息
 publish_item	array	发布的道具列表
 status	int	0-无任务在运行 1-任务运行中 2-上传失败或部分失败（上传任务已经完成） 3-上传成功
-upload_item的每一项内容如下：
+publish_item的每一项内容如下：
 
 字段	类型	说明
 id	string	道具id

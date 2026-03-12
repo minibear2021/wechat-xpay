@@ -195,6 +195,9 @@ POST，请求参数为 JSON 字符串，Content-Type 为 application/json
 | errcode | int | 错误码 |
 | errmsg | string | 错误信息 |
 
+**备注：**
+1. 使用支付签名
+
 ---
 
 ### present_currency
@@ -313,7 +316,6 @@ POST，请求参数为 JSON 字符串，Content-Type 为 application/json
 |------|------|------|
 | begin_ds | int | 起始时间（如20230801） |
 | end_ds | int | 截止时间（如20230810） |
-| env | int | 0-正式环境 1-沙箱环境 |
 
 **返回参数：**
 
@@ -434,7 +436,7 @@ POST，请求参数为 JSON 字符串，Content-Type 为 application/json
 | errcode | int | 错误码 |
 | errmsg | string | 错误信息 |
 | withdraw_no | string | 提现单号 |
-| status | int | 提现单的微信侧单号1-创建成功，提现中 2-提现成功 3-提现失败 |
+| status | int | 提现单状态：1-创建成功，提现中 2-提现成功 3-提现失败 |
 | withdraw_amount | string | 提现金额 |
 | wx_withdraw_no | string | 提现单的微信侧单号 |
 | withdraw_success_timestamp | string | 提现单成功的秒级时间戳 |
@@ -736,7 +738,7 @@ adver_funds_list 的每一项内容如下：
 | 字段 | 类型 | 说明 |
 |------|------|------|
 | settle_begin | int | 结算周期开始时间，unix秒级时间戳 |
-| settle_end | int | 查算周期结束时间，unix秒级时间戳 |
+| settle_end | int | 结算周期结束时间，unix秒级时间戳 |
 | total_amount | int | 发放广告金金额，单位分 |
 | remain_amount | int | 剩余可用广告金金额，单位分 |
 | expire_time | int | 广告金过期时间，unix秒级时间戳 |
@@ -781,6 +783,9 @@ POST，请求参数为 JSON 字符串，Content-Type 为 application/json
 | errmsg | string | 错误信息 |
 | bill_id | string | 充值单 id |
 
+**备注：**
+1. 使用支付签名
+
 ---
 
 ### bind_transfer_account
@@ -810,6 +815,9 @@ POST，请求参数为 JSON 字符串，Content-Type 为 application/json
 |------|------|------|
 | errcode | int | 错误码 |
 | errmsg | string | 错误信息 |
+
+**备注：**
+1. 使用支付签名
 
 ---
 
@@ -916,7 +924,7 @@ bill_list 的每一项内容如下：
 | bill_id | string | 回收单 ID |
 | recover_time | int | 回收时间，unix秒级时间戳 |
 | settle_begin | int | 结算周期开始时间，unix秒级时间戳 |
-| settle_end | int | 查算周期结束时间，unix秒级时间戳 |
+| settle_end | int | 结算周期结束时间，unix秒级时间戳 |
 | fund_id | string | 对应的发放广告金ID |
 | recover_account_name | string | 回收广告金账户 |
 | recover_amount | int | 回收金额，单位：分 |
@@ -970,7 +978,7 @@ POST，请求参数为 JSON 字符串，Content-Type 为 application/json
 | complaint_full_refunded | bool | 投诉单下所有订单是否已全部全额退款 |
 | incoming_user_response | bool | 投诉单是否有待回复的用户留言 |
 | user_complaint_times | int | 用户投诉次数。用户首次发起投诉记为1次，用户每有一次继续投诉就加1 |
-| complaint_media_list | array | 户上传的投诉相关资料，包括图片凭证等 |
+| complaint_media_list | array | 用户上传的投诉相关资料，包括图片凭证等 |
 | problem_description | string | 用户发起投诉前选择的faq标题 |
 | problem_type | string | 问题类型为申请退款的单据是需要最高优先处理的单据。REFUND: 申请退款；SERVICE_NOT_WORK: 服务权益未生效；OTHERS: 其他类型 |
 | apply_refund_amount | int | 当问题类型为申请退款时, 有值, (单位:分) |
@@ -991,7 +999,7 @@ POST，请求参数为 JSON 字符串，Content-Type 为 application/json
 
 | 字段 | 类型 | 说明 |
 |------|------|------|
-| media_type | string | 体文件对应的业务类型，USER_COMPLAINT_IMAGE: 用户提交投诉时上传的图片凭证；OPERATION_IMAGE: 用户、商户、微信支付客服在协商解决投诉时，上传的图片凭证 |
+| media_type | string | 媒体文件对应的业务类型，USER_COMPLAINT_IMAGE: 用户提交投诉时上传的图片凭证；OPERATION_IMAGE: 用户、商户、微信支付客服在协商解决投诉时，上传的图片凭证 |
 | media_url | array | 每一项的内容为string，媒体文件请求url |
 
 其中 service_order_info 每一项内容为：
@@ -1698,7 +1706,7 @@ if __name__ == "__main__":
 1. 所有接口都需要在 query 参数中传入 `access_token`
 2. 需要支付签名的接口，需要在 query 参数中传入 `pay_sig`
 3. 需要用户态签名的接口，需要在 query 参数中传入 `signature`
-4. 所有金额单位均为代币
+4. 金额单位因接口而异：代币相关接口单位为代币数量，现金相关接口单位为人民币分，提现接口单位为人民币元
 5. 订单号（order_id）、退款订单号（refund_order_id）、单号（bill_no）需要保证唯一性
 6. JSON 序列化结果在不同语言/版本中可能不同，需要确保参与签名的 post_body 和真正发起 HTTP 请求的一致
 7. 环境参数（env）：0-正式环境，1-沙箱环境

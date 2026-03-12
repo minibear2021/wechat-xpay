@@ -141,15 +141,17 @@ class TestXPayAsyncClient:
                 json={
                     "errcode": 0,
                     "errmsg": "ok",
-                    "order_id": "order_123",
-                    "create_time": 1700000000,
-                    "update_time": 1700000100,
-                    "status": 2,
-                    "biz_type": 0,
-                    "order_fee": 1000,
-                    "paid_fee": 1000,
-                    "order_type": 0,
-                    "env_type": 1,
+                    "order": {
+                        "order_id": "order_123",
+                        "create_time": 1700000000,
+                        "update_time": 1700000100,
+                        "status": 2,
+                        "biz_type": 0,
+                        "order_fee": 1000,
+                        "paid_fee": 1000,
+                        "order_type": 0,
+                        "env_type": 1,
+                    },
                 },
             )
         )

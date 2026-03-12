@@ -320,7 +320,7 @@ class XPayAsyncClient(BaseClient):
         if wx_order_id:
             payload["wx_order_id"] = wx_order_id
         response = await self._http_post("/xpay/query_order", payload, access_token, session_key)
-        return models.Order(**response)
+        return models.Order(**response.get("order", {}))
 
     async def refund_order(
         self,
@@ -924,22 +924,19 @@ class XPayAsyncClient(BaseClient):
         self,
         access_token: str,
         session_key: str,
-        begin_ds: int,
-        end_ds: int,
+        fund_id: str,
     ) -> models.AdverfundsOrderDownload:
-        """下载广告金订单账单。
+        """下载广告金对应的商户订单信息。
 
         Args:
             session_key: 用户的 session_key，用于计算用户态签名
-            begin_ds: 开始日期（如 20230801）
-            end_ds: 结束日期（如 20230810）
+            fund_id: 广告金发放 ID
 
         Returns:
             AdverfundsOrderDownload，包含下载 URL
         """
-        payload = {
-            "begin_ds": begin_ds,
-            "end_ds": end_ds,
+        payload: dict[str, Any] = {
+            "fund_id": fund_id,
         }
         response = await self._http_post(
             "/xpay/download_adverfunds_order", payload, access_token, session_key
@@ -990,22 +987,25 @@ class XPayAsyncClient(BaseClient):
         self,
         access_token: str,
         session_key: str,
-        file_name: str,
-        file_type: str,
+        wxpay_url: str,
+        complaint_id: str,
+        convert_cos: bool = False,
     ) -> models.UploadFileSign:
-        """获取上传文件签名。
+        """获取微信支付反馈投诉图片的签名头部。
 
         Args:
             session_key: 用户的 session_key，用于计算用户态签名
-            file_name: 文件名称
-            file_type: 文件类型，如 "image/jpeg", "image/png"
+            wxpay_url: 微信支付的图片地址，格式为 "https://api.mch.weixin.qq.com/v3/merchant-service/images/{xxxxxx}"
+            complaint_id: 对应的反馈投诉 ID
+            convert_cos: 是否转存到 cos，转存后可获得临时下载地址（30 分钟有效）
 
         Returns:
-            UploadFileSign，包含签名和上传 URL
+            UploadFileSign，包含签名和可选的 cos URL
         """
         payload: dict[str, Any] = {
-            "file_name": file_name,
-            "file_type": file_type,
+            "wxpay_url": wxpay_url,
+            "convert_cos": convert_cos,
+            "complaint_id": complaint_id,
         }
         response = await self._http_post(
             "/xpay/get_upload_file_sign", payload, access_token, session_key

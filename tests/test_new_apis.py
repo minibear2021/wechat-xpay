@@ -406,8 +406,7 @@ class TestFundsBillAPIs:
         result = client.download_adverfunds_order(
             access_token="test_access_token",
             session_key="session_key_456",
-            begin_ds=20230801,
-            end_ds=20230810,
+            fund_id="fund_001",
         )
 
         assert isinstance(result, models.AdverfundsOrderDownload)
@@ -494,8 +493,9 @@ class TestUploadFileSign:
         result = client.get_upload_file_sign(
             access_token="test_access_token",
             session_key="session_key_456",
-            file_name="test.jpg",
-            file_type="image/jpeg",
+            wxpay_url="https://api.mch.weixin.qq.com/v3/merchant-service/images/test123",
+            complaint_id="complaint_001",
+            convert_cos=True,
         )
 
         assert isinstance(result, models.UploadFileSign)
@@ -526,8 +526,9 @@ class TestUploadFileSign:
         result = await client.get_upload_file_sign(
             access_token="test_access_token",
             session_key="session_key_456",
-            file_name="test.png",
-            file_type="image/png",
+            wxpay_url="https://api.mch.weixin.qq.com/v3/merchant-service/images/test456",
+            complaint_id="complaint_002",
+            convert_cos=True,
         )
 
         assert isinstance(result, models.UploadFileSign)

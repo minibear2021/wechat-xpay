@@ -136,6 +136,7 @@ class CallbackResult:
     ) -> None:
         self.notification = notification
         self._fmt = fmt
+        self.content_type = "application/json" if fmt == "json" else "application/xml"
 
     def success_response(self) -> str:
         """返回与请求格式一致的成功应答。

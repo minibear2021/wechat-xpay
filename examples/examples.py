@@ -167,12 +167,12 @@ def webhook_example():
 
         @app.route('/notify', methods=['POST'])
         def notify():
-            result = parser.callback(request.data)  # 每次调用返回独立 CallbackResult，并发安全
+            result = parser.callback(request.data)
             try:
                 handle_notification(result.notification)
-                return Response(result.success_response(), content_type='application/xml')
+                return Response(result.success_response(), content_type=result.content_type)
             except Exception as e:
-                return Response(result.fail_response(str(e)), content_type='application/xml', status=500)
+                return Response(result.fail_response(str(e)), content_type=result.content_type, status=500)
     """
     import json as _json
 

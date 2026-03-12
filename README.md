@@ -176,24 +176,44 @@ asyncio.run(main())
 
 ### 处理 Webhook
 
+微信服务器会推送四种通知事件：`xpay_goods_deliver_notify`（道具发货）、`xpay_coin_pay_notify`（代币支付）、`xpay_refund_notify`（退款）、`xpay_complaint_notify`（用户投诉）。
+
+使用 `callback()` 作为统一入口，自动识别 JSON / XML 格式，并返回与请求格式一致的应答：
+
 ```python
-from wechat_xpay.webhook import WebhookParser
+from wechat_xpay.webhook import (
+    WebhookParser,
+    GoodsDeliverNotify,
+    CoinPayNotify,
+    RefundNotify,
+    ComplaintNotify,
+)
 
 parser = WebhookParser()
 
-# 解析 JSON 负载
-notification = parser.parse({
-    "Event": "xpay_goods_deliver_notify",
-    "OpenId": "用户_openid",
-    "OutTradeNo": "订单_123",
-    # ... 其他字段
-})
+# 以 Flask 为例（Django / FastAPI 等框架同理）
+@app.route('/notify', methods=['POST'])
+def notify():
+    # callback() 自动识别 JSON 或 XML 格式
+    # 每次调用返回独立的 CallbackResult 实例，并发安全
+    result = parser.callback(request.data)
+    try:
+        notification = result.notification
 
-print(f"事件类型: {notification.event}")
-print(f"用户 OpenID: {notification.open_id}")
+        if isinstance(notification, GoodsDeliverNotify):
+            print(f"发货通知: {notification.out_trade_no}")
+        elif isinstance(notification, CoinPayNotify):
+            print(f"代币支付: {notification.out_trade_no}")
+        elif isinstance(notification, RefundNotify):
+            print(f"退款结果: {'成功' if notification.ret_code == 0 else '失败'}")
+        elif isinstance(notification, ComplaintNotify):
+            print(f"用户投诉: {notification.request_id}")
+        # TODO: 根据返回参数进行必要的业务处理，处理完后返回成功或失败
 
-# 返回成功响应给微信
-response = parser.success_response()
+        # 返回与请求格式一致的成功应答（JSON 请求返回 JSON，XML 请求返回 XML）
+        return Response(result.success_response(), content_type=result.content_type)
+    except Exception as e:
+        return Response(result.fail_response(str(e)), content_type=result.content_type, status=500)
 ```
 
 ## 错误处理

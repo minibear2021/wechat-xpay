@@ -37,7 +37,7 @@ from wechat_xpay import XPayClient
 with XPayClient(
     app_id="你的_app_id",
     app_key="你的_app_key",
-    env=0,  # 0=沙箱环境，1=生产环境
+    env=0,  # 0=生成环境，1=沙箱环境
 ) as client:
     # access_token 和 session_key 在每次调用 API 时传入，因为它们都会定期过期
     balance = client.query_user_balance(
@@ -174,7 +174,7 @@ async def main():
 asyncio.run(main())
 ```
 
-### 处理 Webhook
+### 处理回调事件通知
 
 微信服务器会推送四种通知事件：`xpay_goods_deliver_notify`（道具发货）、`xpay_coin_pay_notify`（代币支付）、`xpay_refund_notify`（退款）、`xpay_complaint_notify`（用户投诉）。
 
@@ -208,7 +208,7 @@ def notify():
             print(f"退款结果: {'成功' if notification.ret_code == 0 else '失败'}")
         elif isinstance(notification, ComplaintNotify):
             print(f"用户投诉: {notification.request_id}")
-        # TODO: 根据返回参数进行必要的业务处理，处理完后返回成功或失败
+        # TODO: 根据回调通知的参数进行必要的业务处理，处理完后返回成功或失败
 
         # 返回与请求格式一致的成功应答（JSON 请求返回 JSON，XML 请求返回 XML）
         return Response(result.success_response(), content_type=result.content_type)
@@ -412,7 +412,9 @@ signature = calc_signature(
 
 ## 文档
 
-查看 `docs/plans/` 目录了解实现细节和 API 规范。
+- **[SDK 接口文档](docs/sdk-reference.md)** - 完整的数据模型、API 接口、参数说明和返回值参考
+- **[API 原始文档](docs/apis.md)** - 微信官方 API 规范
+- **`docs/plans/`** - 实现细节和设计文档
 
 ## 许可证
 

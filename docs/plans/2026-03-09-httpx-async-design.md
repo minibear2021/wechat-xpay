@@ -60,7 +60,7 @@ class BaseClient(ABC):
         app_id: 小程序 AppID
         app_key: 用于计算 pay_sig 的 AppKey
         session_key: 用于计算用户态签名的 session_key
-        env: 环境，0 表示沙箱，1 表示生产环境
+        env: 环境，0 表示生产环境，1 表示沙箱
         base_url: 可选的自定义基础 URL
     """
 

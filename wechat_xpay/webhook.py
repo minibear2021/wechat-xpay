@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass
 from typing import Any
@@ -121,6 +122,47 @@ class ComplaintNotify:
     request_id: str = ""
 
 
+class CallbackResult:
+    """callback() 的返回结果，将通知对象与应答方法绑定在一起。
+
+    每次 callback() 调用都会创建独立的实例，格式信息不共享，
+    并发环境下不存在冲突。
+    """
+
+    def __init__(
+        self,
+        notification: GoodsDeliverNotify | CoinPayNotify | RefundNotify | ComplaintNotify,
+        fmt: str,
+    ) -> None:
+        self.notification = notification
+        self._fmt = fmt
+
+    def success_response(self) -> str:
+        """返回与请求格式一致的成功应答。
+
+        微信服务器要求在 5 秒内收到成功应答，否则会重试最多 3 次。
+
+        Returns:
+            应答字符串（XML 或 JSON），直接作为 HTTP 响应体返回
+        """
+        if self._fmt == "json":
+            return json.dumps({"errcode": 0, "errmsg": "ok"})
+        return "<xml><return_code>SUCCESS</return_code><return_msg>OK</return_msg></xml>"
+
+    def fail_response(self, message: str = "FAIL") -> str:
+        """返回与请求格式一致的失败应答。
+
+        Args:
+            message: 失败原因
+
+        Returns:
+            应答字符串（XML 或 JSON），直接作为 HTTP 响应体返回
+        """
+        if self._fmt == "json":
+            return json.dumps({"errcode": -1, "errmsg": message})
+        return f"<xml><return_code>FAIL</return_code><return_msg>{message}</return_msg></xml>"
+
+
 class WebhookParser:
     """Parser for WeChat XPay webhook messages."""
 
@@ -151,6 +193,31 @@ class WebhookParser:
             return self._parse_complaint_notify(data)
         else:
             raise ValueError(f"Unknown event type: {event}")
+
+    def callback(self, body: str | bytes) -> CallbackResult:
+        """Parse webhook callback from raw HTTP request body.
+
+        Auto-detects JSON or XML format. Returns a CallbackResult that bundles
+        the parsed notification with success_response() / fail_response() methods
+        matching the incoming format. Each call returns an independent object,
+        safe for concurrent use.
+
+        Args:
+            body: Raw request body, str or bytes (e.g. Flask's request.data)
+
+        Returns:
+            CallbackResult with .notification and response helpers
+
+        Raises:
+            ValueError: If body format is invalid or event type is unknown
+        """
+        if isinstance(body, bytes):
+            body = body.decode("utf-8")
+        body = body.strip()
+        if body.startswith("<"):
+            return CallbackResult(self.parse(body), "xml")
+        else:
+            return CallbackResult(self.parse(json.loads(body)), "json")
 
     def _parse_xml(self, xml_str: str) -> dict[str, Any]:
         """Parse XML string to dict."""

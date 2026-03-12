@@ -4,6 +4,13 @@ import logging
 
 from config import ACCESS_TOKEN, APP_SECRET, APPID, ENV, OPENID, SESSION_KEY, USER_IP
 from wechat_xpay import XPayAsyncClient, XPayClient
+from wechat_xpay.webhook import (
+    ComplaintNotify,
+    CoinPayNotify,
+    GoodsDeliverNotify,
+    RefundNotify,
+    WebhookParser,
+)
 
 
 def setup_logger() -> logging.Logger:
@@ -141,6 +148,143 @@ def example_without_logging():
         print(f"用户余额: {balance.balance}")
 
 
+def webhook_example():
+    """回调通知消息处理示例。
+
+    微信服务器会以 XML 或 JSON 格式向开发者服务器推送以下四种通知：
+      - xpay_goods_deliver_notify  : 道具发货通知（用户购买道具后触发，需发货）
+      - xpay_coin_pay_notify       : 代币支付通知（用户消耗代币后触发）
+      - xpay_refund_notify         : 退款结果通知
+      - xpay_complaint_notify      : 用户投诉通知
+
+    实际部署时（以 Flask 为例）：
+
+        from flask import Flask, request, Response
+        from wechat_xpay.webhook import CallbackResult, WebhookParser, GoodsDeliverNotify, ...
+
+        app = Flask(__name__)
+        parser = WebhookParser()
+
+        @app.route('/notify', methods=['POST'])
+        def notify():
+            result = parser.callback(request.data)  # 每次调用返回独立 CallbackResult，并发安全
+            try:
+                handle_notification(result.notification)
+                return Response(result.success_response(), content_type='application/xml')
+            except Exception as e:
+                return Response(result.fail_response(str(e)), content_type='application/xml', status=500)
+    """
+    import json as _json
+
+    parser = WebhookParser()
+
+    # ------------------------------------------------------------------
+    # 统一入口：parser.callback(body) 自动识别 JSON / XML 格式
+    # 返回 CallbackResult，每次调用创建独立实例，并发环境下不会冲突
+    # result.notification 为解析后的通知对象，通过 isinstance 区分处理逻辑
+    # result.success_response() / result.fail_response() 与请求格式保持一致
+    # ------------------------------------------------------------------
+
+    def handle_notification(body: str | bytes) -> str:
+        """模拟 HTTP 回调处理函数，返回应答给微信服务器的字符串。"""
+        result = parser.callback(body)
+        notification = result.notification
+
+        if isinstance(notification, GoodsDeliverNotify):
+            # 道具发货通知：完成发货后调用 client.notify_provide_goods() 确认
+            print("=== 道具发货通知 ===")
+            print(f"  用户 OpenID : {notification.open_id}")
+            print(f"  订单号      : {notification.out_trade_no}")
+            if notification.goods_info:
+                print(f"  商品 ID     : {notification.goods_info.product_id}")
+                print(f"  购买数量    : {notification.goods_info.quantity}")
+            # TODO: client.notify_provide_goods(...)
+
+        elif isinstance(notification, CoinPayNotify):
+            # 代币支付通知：记录消费流水
+            print("\n=== 代币支付通知 ===")
+            print(f"  用户 OpenID : {notification.open_id}")
+            print(f"  订单号      : {notification.out_trade_no}")
+            if notification.coin_info:
+                print(f"  消耗代币数  : {notification.coin_info.quantity}")
+
+        elif isinstance(notification, RefundNotify):
+            # 退款结果通知：ret_code=0 表示退款成功
+            print("\n=== 退款结果通知 ===")
+            print(f"  用户 OpenID : {notification.open_id}")
+            print(f"  退款单号    : {notification.mch_refund_id}")
+            print(f"  退款金额    : {notification.refund_fee}")
+            if notification.ret_code == 0:
+                print("  退款结果    : 成功")
+            else:
+                print(f"  退款结果    : 失败({notification.ret_msg})")
+
+        elif isinstance(notification, ComplaintNotify):
+            # 用户投诉通知：及时回复，避免影响商户评级
+            print("\n=== 用户投诉通知 ===")
+            print(f"  用户 OpenID : {notification.open_id}")
+            print(f"  投诉请求 ID : {notification.request_id}")
+            print(f"  关联订单号  : {notification.mch_order_id}")
+            # TODO: client.response_complaint(...) 或 client.complete_complaint(...)
+
+        return result.success_response()
+
+    # ------------------------------------------------------------------
+    # 测试：JSON 格式（dict 序列化为 JSON bytes 模拟 request.data）
+    # ------------------------------------------------------------------
+    json_body = _json.dumps(
+        {
+            "ToUserName": "gh_1234567890",
+            "FromUserName": "official_account_openid",
+            "CreateTime": 1700000000,
+            "MsgType": "event",
+            "Event": "xpay_goods_deliver_notify",
+            "OpenId": OPENID,
+            "OutTradeNo": "ORDER_20240101_001",
+            "Env": ENV,
+            "WeChatPayInfo": {
+                "MchOrderNo": "ORDER_20240101_001",
+                "TransactionId": "4200001234567890",
+                "PaidTime": 1700000000,
+            },
+            "GoodsInfo": {
+                "ProductId": "product_001",
+                "Quantity": 1,
+                "OrigPrice": 100,
+                "ActualPrice": 100,
+                "Attach": "custom_data",
+            },
+        }
+    ).encode("utf-8")
+
+    resp = handle_notification(json_body)
+    print(f"  应答: {resp}")
+
+    # ------------------------------------------------------------------
+    # 测试：XML 格式（模拟 request.data 为 XML bytes）
+    # ------------------------------------------------------------------
+    xml_body = """<xml>
+  <ToUserName>gh_1234567890</ToUserName>
+  <FromUserName>official_account_openid</FromUserName>
+  <CreateTime>1700000003</CreateTime>
+  <MsgType>event</MsgType>
+  <Event>xpay_complaint_notify</Event>
+  <OpenId>{openid}</OpenId>
+  <WxOrderId>4200001234567890</WxOrderId>
+  <MchOrderId>ORDER_20240101_001</MchOrderId>
+  <ComplaintTime>1700000003</ComplaintTime>
+  <RetryTimes>0</RetryTimes>
+  <RequestId>COMPLAINT_REQ_001</RequestId>
+</xml>""".format(
+        openid=OPENID
+    ).encode(
+        "utf-8"
+    )
+
+    resp = handle_notification(xml_body)
+    print(f"  应答: {resp}")
+
+
 if __name__ == "__main__":
     print("=== 同步客户端日志示例 ===")
     sync_example_with_logging()
@@ -152,3 +296,6 @@ if __name__ == "__main__":
 
     print("\n=== 不使用日志示例 ===")
     example_without_logging()
+
+    print("\n=== 回调通知消息处理示例 ===")
+    webhook_example()

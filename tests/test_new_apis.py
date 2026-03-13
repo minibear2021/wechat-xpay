@@ -23,9 +23,6 @@ class TestNotifyProvideGoods:
                 json={
                     "errcode": 0,
                     "errmsg": "ok",
-                    "order_id": "order_123",
-                    "out_trade_no": "OUT_001",
-                    "provide_status": 1,
                 },
             )
         )
@@ -36,10 +33,7 @@ class TestNotifyProvideGoods:
             order_id="order_123",
         )
 
-        assert isinstance(result, models.NotifyProvideGoodsResult)
-        assert result.order_id == "order_123"
-        assert result.out_trade_no == "OUT_001"
-        assert result.provide_status == 1
+        assert result is True
         assert route.called
 
     @respx.mock
@@ -56,9 +50,6 @@ class TestNotifyProvideGoods:
                 json={
                     "errcode": 0,
                     "errmsg": "ok",
-                    "order_id": "order_123",
-                    "out_trade_no": "OUT_001",
-                    "provide_status": 1,
                 },
             )
         )
@@ -69,8 +60,7 @@ class TestNotifyProvideGoods:
             wx_order_id="wx_order_123",
         )
 
-        assert isinstance(result, models.NotifyProvideGoodsResult)
-        assert result.provide_status == 1
+        assert result is True
         assert route.called
         await client.close()
 
@@ -92,17 +82,6 @@ class TestGoodsManagement:
                 json={
                     "errcode": 0,
                     "errmsg": "ok",
-                    "status": 1,
-                    "upload_item": [
-                        {
-                            "id": "goods_001",
-                            "name": "道具1",
-                            "price": 100,
-                            "remark": "测试道具",
-                            "item_url": "https://example.com/item1",
-                            "upload_status": 0,
-                        }
-                    ],
                 },
             )
         )
@@ -110,7 +89,7 @@ class TestGoodsManagement:
         result = client.start_upload_goods(
             access_token="test_access_token",
             session_key="session_key_456",
-            goods=[
+            upload_item=[
                 {
                     "id": "goods_001",
                     "name": "道具1",
@@ -121,10 +100,7 @@ class TestGoodsManagement:
             ],
         )
 
-        assert isinstance(result, models.GoodsUploadStatus)
-        assert result.status == 1
-        assert len(result.upload_item) == 1
-        assert result.upload_item[0].id == "goods_001"
+        assert result is True
         assert route.called
 
     @respx.mock
@@ -179,11 +155,6 @@ class TestGoodsManagement:
                 json={
                     "errcode": 0,
                     "errmsg": "ok",
-                    "status": 1,
-                    "publish_item": [
-                        {"id": "goods_001", "publish_status": 0},
-                        {"id": "goods_002", "publish_status": 0},
-                    ],
                 },
             )
         )
@@ -191,12 +162,10 @@ class TestGoodsManagement:
         result = client.start_publish_goods(
             access_token="test_access_token",
             session_key="session_key_456",
-            goods=[{"id": "goods_001"}, {"id": "goods_002"}],
+            publish_item=[{"id": "goods_001"}, {"id": "goods_002"}],
         )
 
-        assert isinstance(result, models.GoodsPublishStatus)
-        assert result.status == 1
-        assert len(result.publish_item) == 2
+        assert result is True
         assert route.called
 
     @respx.mock
@@ -256,12 +225,14 @@ class TestFundsBillAPIs:
         result = client.create_funds_bill(
             access_token="test_access_token",
             session_key="session_key_456",
-            transfer_account_uid=12345,
-            transfer_account_agency_id=67890,
             transfer_amount=10000,
-            fund_id="fund_001",
+            transfer_account_uid=12345,
+            transfer_account_name="Account 1",
+            transfer_account_agency_id=67890,
             settle_begin=1700000000,
             settle_end=1700086400,
+            authorize_advertise=1,
+            fund_type=0,
         )
 
         assert isinstance(result, models.FundsBillResult)
@@ -287,7 +258,7 @@ class TestFundsBillAPIs:
             access_token="test_access_token",
             session_key="session_key_456",
             transfer_account_uid=12345,
-            transfer_account_agency_id=67890,
+            transfer_account_org_name="测试主体",
         )
 
         assert result is True
@@ -331,6 +302,8 @@ class TestFundsBillAPIs:
             session_key="session_key_456",
             page=1,
             page_size=10,
+            oper_time_begin=1700000000,
+            oper_time_end=1700086400,
         )
 
         assert isinstance(result, models.FundsBillList)
@@ -375,6 +348,8 @@ class TestFundsBillAPIs:
             session_key="session_key_456",
             page=1,
             page_size=10,
+            recover_time_begin=1700000000,
+            recover_time_end=1700086400,
         )
 
         assert isinstance(result, models.RecoverBillList)

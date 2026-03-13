@@ -258,7 +258,11 @@ class XPayAsyncClient(BaseClient):
         if user_ip:
             payload["user_ip"] = user_ip
         response = await self._http_post(
-            "/xpay/cancel_currency_pay", payload, access_token, session_key
+            "/xpay/cancel_currency_pay",
+            payload,
+            access_token,
+            session_key,
+            needs_user_sig=True,
         )
         return models.CancelCurrencyPayResult(**response)
 
@@ -496,8 +500,11 @@ class XPayAsyncClient(BaseClient):
         self,
         access_token: str,
         session_key: str,
-        page: int = 1,
-        page_size: int = 10,
+        page: int,
+        page_size: int,
+        settle_begin: int,
+        settle_end: int,
+        fund_type: int | None = None,
     ) -> models.AdverFundList:
         """查询广告金发放记录。
 
@@ -505,13 +512,23 @@ class XPayAsyncClient(BaseClient):
             session_key: 用户的 session_key，用于计算用户态签名
             page: 页码（>= 1）
             page_size: 每页记录数
+            settle_begin: 查询结算周期开始时间，unix 秒级时间戳
+            settle_end: 查询结算周期结束时间，unix 秒级时间戳
+            fund_type: 广告金发放原因，0: 通用赠送，1: 广告激励，2: 定向激励（可选）
 
         Returns:
             AdverFundList，包含发放记录和分页信息
         """
+        filter_obj: dict[str, Any] = {
+            "settle_begin": settle_begin,
+            "settle_end": settle_end,
+        }
+        if fund_type is not None:
+            filter_obj["fund_type"] = fund_type
         payload: dict[str, Any] = {
             "page": page,
             "page_size": page_size,
+            "filter": filter_obj,
         }
         response = await self._http_post(
             "/xpay/query_adver_funds", payload, access_token, session_key
@@ -667,7 +684,7 @@ class XPayAsyncClient(BaseClient):
         session_key: str,
         order_id: str | None = None,
         wx_order_id: str | None = None,
-    ) -> models.NotifyProvideGoodsResult:
+    ) -> bool:
         """发货完成通知。
 
         Args:
@@ -676,17 +693,15 @@ class XPayAsyncClient(BaseClient):
             wx_order_id: 微信内部单号（与 order_id 二选一）
 
         Returns:
-            NotifyProvideGoodsResult，包含发货状态
+            成功返回 True
         """
         payload: dict[str, Any] = {}
         if order_id:
             payload["order_id"] = order_id
         if wx_order_id:
             payload["wx_order_id"] = wx_order_id
-        response = await self._http_post(
-            "/xpay/notify_provide_goods", payload, access_token, session_key
-        )
-        return models.NotifyProvideGoodsResult(**response)
+        await self._http_post("/xpay/notify_provide_goods", payload, access_token, session_key)
+        return True
 
     # -------------------------------------------------------------------------
     # 道具管理 API
@@ -696,27 +711,20 @@ class XPayAsyncClient(BaseClient):
         self,
         access_token: str,
         session_key: str,
-        goods: list[dict[str, Any]],
-    ) -> models.GoodsUploadStatus:
+        upload_item: list[dict[str, Any]],
+    ) -> bool:
         """启动道具上传。
 
         Args:
             session_key: 用户的 session_key，用于计算用户态签名
-            goods: 道具列表，每个道具包含 id, name, price, remark, item_url
+            upload_item: 道具列表，每个道具包含 id, name, price, remark, item_url
 
         Returns:
-            GoodsUploadStatus，包含上传任务状态
+            成功返回 True
         """
-        payload: dict[str, Any] = {"goods": goods}
-        response = await self._http_post(
-            "/xpay/start_upload_goods", payload, access_token, session_key
-        )
-        return models.GoodsUploadStatus(
-            status=response.get("status", 0),
-            upload_item=[
-                models.GoodsUploadItem(**item) for item in response.get("upload_item", [])
-            ],
-        )
+        payload: dict[str, Any] = {"upload_item": upload_item}
+        await self._http_post("/xpay/start_upload_goods", payload, access_token, session_key)
+        return True
 
     async def query_upload_goods(
         self,
@@ -746,27 +754,20 @@ class XPayAsyncClient(BaseClient):
         self,
         access_token: str,
         session_key: str,
-        goods: list[dict[str, Any]],
-    ) -> models.GoodsPublishStatus:
+        publish_item: list[dict[str, Any]],
+    ) -> bool:
         """启动道具发布。
 
         Args:
             session_key: 用户的 session_key，用于计算用户态签名
-            goods: 道具列表，每个道具包含 id
+            publish_item: 道具列表，每个道具包含 id
 
         Returns:
-            GoodsPublishStatus，包含发布任务状态
+            成功返回 True
         """
-        payload: dict[str, Any] = {"goods": goods}
-        response = await self._http_post(
-            "/xpay/start_publish_goods", payload, access_token, session_key
-        )
-        return models.GoodsPublishStatus(
-            status=response.get("status", 0),
-            publish_item=[
-                models.GoodsPublishItem(**item) for item in response.get("publish_item", [])
-            ],
-        )
+        payload: dict[str, Any] = {"publish_item": publish_item}
+        await self._http_post("/xpay/start_publish_goods", payload, access_token, session_key)
+        return True
 
     async def query_publish_goods(
         self,
@@ -800,36 +801,42 @@ class XPayAsyncClient(BaseClient):
         self,
         access_token: str,
         session_key: str,
-        transfer_account_uid: int,
-        transfer_account_agency_id: int,
         transfer_amount: int,
-        fund_id: str,
+        transfer_account_uid: int,
+        transfer_account_name: str,
+        transfer_account_agency_id: int,
         settle_begin: int,
         settle_end: int,
+        authorize_advertise: int,
+        fund_type: int,
         request_id: str | None = None,
     ) -> models.FundsBillResult:
-        """创建广告金账单。
+        """充值广告金。
 
         Args:
             session_key: 用户的 session_key，用于计算用户态签名
-            transfer_account_uid: 转账账户 UID
-            transfer_account_agency_id: 转账账户代理 ID
-            transfer_amount: 转账金额（单位：分）
-            fund_id: 广告金发放记录 ID
-            settle_begin: 结算开始时间戳
-            settle_end: 结算结束时间戳
-            request_id: 请求 ID（幂等控制，可选）
+            transfer_amount: 充值金额（单位：分）
+            transfer_account_uid: 充值账户 UID
+            transfer_account_name: 充值账户名称
+            transfer_account_agency_id: 充值账户服务商账号 ID
+            settle_begin: 充值所使用的广告金对应的结算周期开始时间，unix 秒级时间戳
+            settle_end: 充值所使用的广告金对应的结算周期结束时间，unix 秒级时间戳
+            authorize_advertise: 是否授权广告数据，0: 否，1: 是
+            fund_type: 广告金发放原因，0: 通用赠送，1: 广告激励，2: 定向激励
+            request_id: 请求 ID（幂等控制，可选，不超过 1024 个字符）
 
         Returns:
             FundsBillResult，包含账单 ID
         """
         payload: dict[str, Any] = {
-            "transfer_account_uid": transfer_account_uid,
-            "transfer_account_agency_id": transfer_account_agency_id,
             "transfer_amount": transfer_amount,
-            "fund_id": fund_id,
+            "transfer_account_uid": transfer_account_uid,
+            "transfer_account_name": transfer_account_name,
+            "transfer_account_agency_id": transfer_account_agency_id,
             "settle_begin": settle_begin,
             "settle_end": settle_end,
+            "authorize_advertise": authorize_advertise,
+            "fund_type": fund_type,
         }
         if request_id:
             payload["request_id"] = request_id
@@ -843,21 +850,21 @@ class XPayAsyncClient(BaseClient):
         access_token: str,
         session_key: str,
         transfer_account_uid: int,
-        transfer_account_agency_id: int,
+        transfer_account_org_name: str,
     ) -> bool:
         """绑定转账账户。
 
         Args:
             session_key: 用户的 session_key，用于计算用户态签名
-            transfer_account_uid: 转账账户 UID
-            transfer_account_agency_id: 转账账户代理 ID
+            transfer_account_uid: 充值账户 UID
+            transfer_account_org_name: 充值账户主体名称
 
         Returns:
             成功返回 True
         """
         payload: dict[str, Any] = {
             "transfer_account_uid": transfer_account_uid,
-            "transfer_account_agency_id": transfer_account_agency_id,
+            "transfer_account_org_name": transfer_account_org_name,
         }
         await self._http_post("/xpay/bind_transfer_accout", payload, access_token, session_key)
         return True
@@ -866,22 +873,39 @@ class XPayAsyncClient(BaseClient):
         self,
         access_token: str,
         session_key: str,
-        page: int = 1,
-        page_size: int = 10,
+        page: int,
+        page_size: int,
+        oper_time_begin: int,
+        oper_time_end: int,
+        bill_id: str | None = None,
+        request_id: str | None = None,
     ) -> models.FundsBillList:
-        """查询资金账单。
+        """查询广告金充值记录。
 
         Args:
             session_key: 用户的 session_key，用于计算用户态签名
             page: 页码（>= 1）
             page_size: 每页记录数
+            oper_time_begin: 查询充值开始时间，unix 秒级时间戳
+            oper_time_end: 查询充值结束时间，unix 秒级时间戳
+            bill_id: 广告金充值单 ID（可选）
+            request_id: 充值时传入的 request_id（可选）
 
         Returns:
             FundsBillList，包含账单列表和分页信息
         """
+        filter_obj: dict[str, Any] = {
+            "oper_time_begin": oper_time_begin,
+            "oper_time_end": oper_time_end,
+        }
+        if bill_id is not None:
+            filter_obj["bill_id"] = bill_id
+        if request_id is not None:
+            filter_obj["request_id"] = request_id
         payload: dict[str, Any] = {
             "page": page,
             "page_size": page_size,
+            "filter": filter_obj,
         }
         response = await self._http_post(
             "/xpay/query_funds_bill", payload, access_token, session_key
@@ -895,22 +919,35 @@ class XPayAsyncClient(BaseClient):
         self,
         access_token: str,
         session_key: str,
-        page: int = 1,
-        page_size: int = 10,
+        page: int,
+        page_size: int,
+        recover_time_begin: int,
+        recover_time_end: int,
+        bill_id: str | None = None,
     ) -> models.RecoverBillList:
-        """查询回收账单。
+        """查询广告金回收记录。
 
         Args:
             session_key: 用户的 session_key，用于计算用户态签名
             page: 页码（>= 1）
             page_size: 每页记录数
+            recover_time_begin: 查询回收开始时间，unix 秒级时间戳
+            recover_time_end: 查询回收结束时间，unix 秒级时间戳
+            bill_id: 广告金回收单 ID（可选）
 
         Returns:
             RecoverBillList，包含回收账单列表和分页信息
         """
+        filter_obj: dict[str, Any] = {
+            "recover_time_begin": recover_time_begin,
+            "recover_time_end": recover_time_end,
+        }
+        if bill_id is not None:
+            filter_obj["bill_id"] = bill_id
         payload: dict[str, Any] = {
             "page": page,
             "page_size": page_size,
+            "filter": filter_obj,
         }
         response = await self._http_post(
             "/xpay/query_recover_bill", payload, access_token, session_key

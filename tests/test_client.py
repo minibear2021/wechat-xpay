@@ -413,6 +413,8 @@ class TestAdvertisingFundAPIs:
             session_key="test_session_key",
             page=1,
             page_size=10,
+            settle_begin=1700000000,
+            settle_end=1700086400,
         )
 
         assert isinstance(result, models.AdverFundList)

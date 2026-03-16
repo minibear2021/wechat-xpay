@@ -26,16 +26,13 @@ from wechat_xpay.webhook import (
 # ============================================================================
 
 # 小程序 AppID
-APPID = "wxaa1f951f4433be7b"
+APPID = "your_app_id"
 
 # 小程序 AppKey（用于计算 pay_sig）
 APP_KEY = "your_app_key_here"
 
 # 环境配置：0=正式环境，1=沙箱环境
 ENV = 1
-
-# 回调地址配置
-NOTIFY_URL = "https://www.xxxx.com/notify"
 
 # 日志记录器，记录 API 请求和回调细节
 logging.basicConfig(
@@ -45,12 +42,6 @@ logging.basicConfig(
     format="%(asctime)s - %(process)s - %(levelname)s: %(message)s",
 )
 LOGGER = logging.getLogger("xpay_demo")
-
-# 代理设置，None 或者 {"https": "http://10.10.1.10:1080"}
-PROXY = None
-
-# 请求超时时间配置（秒）
-TIMEOUT = 30
 
 # 初始化 XPay 客户端
 xpay = XPayClient(

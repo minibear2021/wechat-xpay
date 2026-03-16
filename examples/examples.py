@@ -3,10 +3,11 @@
 import logging
 
 from config import ACCESS_TOKEN, APP_SECRET, APPID, ENV, OPENID, SESSION_KEY, USER_IP
+
 from wechat_xpay import XPayAsyncClient, XPayClient
 from wechat_xpay.webhook import (
-    ComplaintNotify,
     CoinPayNotify,
+    ComplaintNotify,
     GoodsDeliverNotify,
     RefundNotify,
     WebhookParser,
@@ -263,23 +264,19 @@ def webhook_example():
     # ------------------------------------------------------------------
     # 测试：XML 格式（模拟 request.data 为 XML bytes）
     # ------------------------------------------------------------------
-    xml_body = """<xml>
+    xml_body = f"""<xml>
   <ToUserName>gh_1234567890</ToUserName>
   <FromUserName>official_account_openid</FromUserName>
   <CreateTime>1700000003</CreateTime>
   <MsgType>event</MsgType>
   <Event>xpay_complaint_notify</Event>
-  <OpenId>{openid}</OpenId>
+  <OpenId>{OPENID}</OpenId>
   <WxOrderId>4200001234567890</WxOrderId>
   <MchOrderId>ORDER_20240101_001</MchOrderId>
   <ComplaintTime>1700000003</ComplaintTime>
   <RetryTimes>0</RetryTimes>
   <RequestId>COMPLAINT_REQ_001</RequestId>
-</xml>""".format(
-        openid=OPENID
-    ).encode(
-        "utf-8"
-    )
+</xml>""".encode()
 
     resp = handle_notification(xml_body)
     print(f"  应答: {resp}")

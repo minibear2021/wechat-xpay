@@ -1512,21 +1512,33 @@ except XPayAPIError as e:
 
 ## 错误码常量
 
-SDK 提供了所有微信 XPay 错误码的常量定义：
+SDK 提供了微信 XPay 错误码的常量定义（与官方 API 文档一致）：
 
 ```python
 from wechat_xpay import (
-    ERR_SYSTEM_ERROR,              # -1: 系统错误
-    ERR_INVALID_OPENID,            # 268490001: openid 错误
-    ERR_BAD_REQUEST_PARAMS,        # 268490002: 请求参数字段错误
-    ERR_SIGNATURE_ERROR,           # 268490003: 签名错误
-    ERR_DUPLICATE_OPERATION,       # 268490004: 重复操作
-    ERR_ORDER_ALREADY_REFUNDED,    # 268490005: 订单已退款
-    ERR_INSUFFICIENT_TOKEN_BALANCE, # 268490006: 代币余额不足
-    ERR_SENSITIVE_CONTENT,         # 268490007: 敏感内容
-    ERR_TOKEN_NOT_PUBLISHED,       # 268490008: 代币未发布
-    ERR_SESSION_KEY_EXPIRED,       # 268490009: session_key 过期
-    # ... 更多错误码
+    ERR_SYSTEM_ERROR,                         # -1: 系统错误
+    ERR_INVALID_OPENID,                       # 268490001: openid 错误
+    ERR_BAD_REQUEST_PARAMS,                   # 268490002: 请求参数字段错误
+    ERR_SIGNATURE_ERROR,                      # 268490003: 签名错误
+    ERR_DUPLICATE_OPERATION,                  # 268490004: 重复操作
+    ERR_ORDER_ALREADY_REFUNDED,               # 268490005: 订单已退款
+    ERR_INSUFFICIENT_TOKEN_BALANCE,           # 268490006: 代币余额不足
+    ERR_SENSITIVE_CONTENT,                    # 268490007: 敏感内容
+    ERR_TOKEN_NOT_PUBLISHED,                  # 268490008: 代币未发布
+    ERR_SESSION_KEY_EXPIRED,                  # 268490009: session_key 过期
+    ERR_DATA_GENERATING,                      # 268490011: 数据生成中
+    ERR_BATCH_TASK_RUNNING,                   # 268490012: 批量任务运行中
+    ERR_CANNOT_REFUND_VERIFIED_ORDER,         # 268490013: 不能退款已核销订单
+    ERR_REFUND_IN_PROGRESS,                   # 268490014: 退款进行中
+    ERR_RATE_LIMIT_EXCEEDED,                  # 268490015: 频率限制
+    ERR_LEFT_FEE_MISMATCH,                    # 268490016: 可退金额不匹配
+    ERR_ADVER_FUND_INDUSTRY_MISMATCH,         # 268490018: 广告金充值帐户行业 id 不匹配
+    ERR_ADVER_FUND_ACCOUNT_BOUND_TO_OTHER_APP, # 268490019: 广告金充值帐户 id 已绑定其他 appid
+    ERR_ADVER_FUND_ORG_NAME_MISMATCH,         # 268490020: 广告金充值帐户主体名称错误
+    ERR_ACCOUNT_NOT_COMPLETED,                # 268490021: 账户未完成进件
+    ERR_ADVER_FUND_ACCOUNT_INVALID,           # 268490022: 广告金充值账户无效
+    ERR_ADVER_FUND_BALANCE_INSUFFICIENT,      # 268490023: 广告金余额不足
+    ERR_ADVER_FUND_AMOUNT_MUST_BE_POSITIVE,   # 268490024: 广告金充值金额必须大于 0
 )
 ```
 
@@ -1536,65 +1548,24 @@ from wechat_xpay import (
 |--------|--------|------|
 | `ERR_SYSTEM_ERROR` | -1 | 系统错误 |
 | `ERR_INVALID_OPENID` | 268490001 | openid 错误 |
-| `ERR_BAD_REQUEST_PARAMS` | 268490002 | 请求参数字段错误 |
+| `ERR_BAD_REQUEST_PARAMS` | 268490002 | 请求参数字段错误，具体看 errmsg |
 | `ERR_SIGNATURE_ERROR` | 268490003 | 签名错误 |
-| `ERR_DUPLICATE_OPERATION` | 268490004 | 重复操作 |
-| `ERR_ORDER_ALREADY_REFUNDED` | 268490005 | 订单已退款 |
-| `ERR_INSUFFICIENT_TOKEN_BALANCE` | 268490006 | 代币余额不足 |
-| `ERR_SENSITIVE_CONTENT` | 268490007 | 敏感内容 |
-| `ERR_TOKEN_NOT_PUBLISHED` | 268490008 | 代币未发布 |
-| `ERR_SESSION_KEY_EXPIRED` | 268490009 | session_key 过期 |
-| `ERR_DATA_GENERATING` | 268490011 | 数据生成中 |
-| `ERR_BATCH_TASK_RUNNING` | 268490012 | 批量任务运行中 |
-| `ERR_CANNOT_REFUND_VERIFIED_ORDER` | 268490013 | 不能退款已核销订单 |
-| `ERR_REFUND_IN_PROGRESS` | 268490014 | 退款进行中 |
+| `ERR_DUPLICATE_OPERATION` | 268490004 | 重复操作（赠送和代币支付和充值广告金相关接口会返回，表示之前的操作已经成功） |
+| `ERR_ORDER_ALREADY_REFUNDED` | 268490005 | 订单已经通过 cancel_currency_pay 接口退款，不支持再退款 |
+| `ERR_INSUFFICIENT_TOKEN_BALANCE` | 268490006 | 代币的退款/支付操作金额不足 |
+| `ERR_SENSITIVE_CONTENT` | 268490007 | 图片或文字存在敏感内容，禁止使用 |
+| `ERR_TOKEN_NOT_PUBLISHED` | 268490008 | 代币未发布，不允许进行代币操作 |
+| `ERR_SESSION_KEY_EXPIRED` | 268490009 | 用户 session_key 不存在或已过期，请重新登录 |
+| `ERR_DATA_GENERATING` | 268490011 | 数据生成中，请稍后调用本接口获取 |
+| `ERR_BATCH_TASK_RUNNING` | 268490012 | 批量任务运行中，请等待完成后才能再次运行 |
+| `ERR_CANNOT_REFUND_VERIFIED_ORDER` | 268490013 | 禁止对核销状态的单进行退款 |
+| `ERR_REFUND_IN_PROGRESS` | 268490014 | 退款操作进行中，稍后可以使用相同参数重试 |
 | `ERR_RATE_LIMIT_EXCEEDED` | 268490015 | 频率限制 |
-| `ERR_LEFT_FEE_MISMATCH` | 268490016 | 可退金额不匹配 |
-| `ERR_INVALID_ENV` | 268447747 | 无效环境 |
-| `ERR_INVALID_APPID` | 268447748 | 无效 AppID |
-| `ERR_MCH_NO_PERMISSION` | 268447749 | 商户无权限 |
-| `ERR_USER_NOT_REGISTERED` | 268500000 | 用户未注册 |
-| `ERR_INVALID_SIGN_TYPE` | 268500001 | 无效签名类型 |
-| `ERR_INVALID_BODY_PARAM` | 268500002 | 无效 body 参数 |
-| `ERR_APPID_MCHID_MISMATCH` | 268500003 | AppID 与商户号不匹配 |
-| `ERR_RESOURCE_NOT_EXIST` | 268500004 | 资源不存在 |
-| `ERR_SIGN_VERIFICATION_FAILED` | 268500005 | 签名验证失败 |
-| `ERR_MCH_NOT_EXISTS` | 268500006 | 商户不存在 |
-| `ERR_MCH_ACCOUNT_ABNORMAL` | 268500007 | 商户账户异常 |
-| `ERR_AMOUNT_MISMATCH` | 268500008 | 金额不匹配 |
-| `ERR_SERVICE_NOT_ENABLED` | 268500009 | 服务未启用 |
-| `ERR_REFUND_FEE_EXCEEDED` | 268500010 | 退款金额超过订单金额 |
-| `ERR_ORDER_PAID` | 268500011 | 订单已支付 |
-| `ERR_ORDER_CLOSED` | 268500012 | 订单已关闭 |
-| `ERR_MCH_CONFIG_LIMITED` | 268500013 | 商户配置受限 |
-| `ERR_REAL_NAME_REQUIRED` | 268500014 | 需要实名认证 |
-| `ERR_BANK_CARD_NOT_SUPPORTED` | 268500015 | 银行卡不支持 |
-| `ERR_ACCOUNT_FROZEN` | 268500016 | 账户被冻结 |
-| `ERR_ORDER_NOT_EXIST` | 268500017 | 订单不存在 |
-| `ERR_REFUND_NOT_EXIST` | 268500018 | 退款不存在 |
-| `ERR_REFUND_AMOUNT_LIMIT` | 268500019 | 退款金额限制 |
-| `ERR_INVALID_TRANSACTION_ID` | 268500020 | 无效交易 ID |
-| `ERR_BALANCE_NOT_ENOUGH` | 268500021 | 余额不足 |
-| `ERR_REFUND_FEE_LIMIT` | 268500022 | 退款费用限制 |
-| `ERR_SYSTEM_BUSY` | 268500023 | 系统繁忙 |
-| `ERR_UPLOAD_FILE_FAILED` | 268500024 | 上传文件失败 |
-| `ERR_INVALID_FILE_TYPE` | 268500025 | 无效文件类型 |
-| `ERR_FILE_SIZE_EXCEEDED` | 268500026 | 文件大小超出限制 |
-| `ERR_INVALID_GOODS_CONFIG` | 268500027 | 无效商品配置 |
-| `ERR_GOODS_NOT_PUBLISHED` | 268500028 | 商品未发布 |
-| `ERR_BATCH_TASK_FAILED` | 268500029 | 批量任务失败 |
-| `ERR_WITHDRAW_AMOUNT_LIMIT` | 268500030 | 提现金额限制 |
-| `ERR_WITHDRAW_FEE_LIMIT` | 268500031 | 提现费用限制 |
-| `ERR_WITHDRAW_COUNT_LIMIT` | 268500032 | 提现次数限制 |
-| `ERR_TRANSFER_ACCOUNT_NOT_BOUND` | 268500033 | 转账账户未绑定 |
-| `ERR_ADVER_FUNDS_NOT_ENOUGH` | 268500034 | 广告金不足 |
-| `ERR_BILL_GENERATING` | 268500035 | 账单生成中 |
-| `ERR_REFUND_APPLICATION_EXIST` | 268500036 | 退款申请已存在 |
-| `ERR_COMPLAINT_NOT_EXIST` | 268500037 | 投诉不存在 |
-| `ERR_NEGOTIATION_FAILED` | 268500038 | 协商失败 |
-| `ERR_INVALID_MEDIA_TYPE` | 268500039 | 无效媒体类型 |
-| `ERR_MEDIA_UPLOAD_FAILED` | 268500040 | 媒体上传失败 |
-| `ERR_IMAGE_SIZE_EXCEEDED` | 268500041 | 图片大小超出限制 |
-| `ERR_IMAGE_FORMAT_NOT_SUPPORTED` | 268500042 | 不支持的图片格式 |
-| `ERR_VIDEO_SIZE_EXCEEDED` | 268500043 | 视频大小超出限制 |
-| `ERR_VIDEO_FORMAT_NOT_SUPPORTED` | 268500044 | 不支持的视频格式 |
+| `ERR_LEFT_FEE_MISMATCH` | 268490016 | 退款的 left_fee 字段与实际不符，请通过 query_order 接口查询确认 |
+| `ERR_ADVER_FUND_INDUSTRY_MISMATCH` | 268490018 | 广告金充值帐户行业 id 不匹配 |
+| `ERR_ADVER_FUND_ACCOUNT_BOUND_TO_OTHER_APP` | 268490019 | 广告金充值帐户 id 已绑定其他 appid |
+| `ERR_ADVER_FUND_ORG_NAME_MISMATCH` | 268490020 | 广告金充值帐户主体名称错误 |
+| `ERR_ACCOUNT_NOT_COMPLETED` | 268490021 | 账户未完成进件 |
+| `ERR_ADVER_FUND_ACCOUNT_INVALID` | 268490022 | 广告金充值账户无效 |
+| `ERR_ADVER_FUND_BALANCE_INSUFFICIENT` | 268490023 | 广告金余额不足 |
+| `ERR_ADVER_FUND_AMOUNT_MUST_BE_POSITIVE` | 268490024 | 广告金充值金额必须大于 0 |

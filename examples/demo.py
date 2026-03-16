@@ -3,6 +3,7 @@
 参考微信支付的示例代码风格，演示如何使用 wechat-xpay SDK 处理
 小游戏虚拟支付的相关业务。
 """
+
 import logging
 import os
 import time
